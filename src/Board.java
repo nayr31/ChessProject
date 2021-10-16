@@ -1,3 +1,5 @@
+import com.sun.source.tree.WhileLoopTree;
+
 import java.util.ArrayList;
 
 public class Board {
@@ -193,8 +195,28 @@ public class Board {
                 }
             }
         }
-
         return slidingMoves;
+    }
+
+    // Just the knight, as it is special with the L pattern
+    ArrayList<Move> generateKnightMoves(int startSpot, Piece token){
+        ArrayList<Move> knightMoves = new ArrayList<>();
+
+        return knightMoves;
+    }
+
+    // Pawn only goes forward, depending on color
+    ArrayList<Move> generatePawnMoves(int startSpot, Piece token){
+        ArrayList<Move> pawnMoves = new ArrayList<>();
+
+        return pawnMoves;
+    }
+
+    // King can only go once in each direction, but also can't go where there are other colored moves present
+    ArrayList<Move> generateKingMoves(int startSpot, Piece token){
+        ArrayList<Move> kingMoves = new ArrayList<>();
+
+        return kingMoves;
     }
 
     // Returns a value depending on the direction provided, which depends on the integer value of the array
@@ -228,9 +250,57 @@ public class Board {
         }
     }
 
+    // Special conversion for the knight since he is a special boy
+    //  [ ]  [1]  [ ]  [2]  [ ]
+    //  [8]  [ ]  [ ]  [ ]  [3]
+    //  [ ]  [ ]  [X]  [ ]  [ ]
+    //  [7]  [ ]  [ ]  [ ]  [4]
+    //  [ ]  [6]  [ ]  [5]  [ ]
+    // Requires special checks, since you can always go -9 or whatever, but it wont be caught by the board
+    int directionConversionKnight(int dir){
+        return 0;//TODO Finish this
+    }
+
     // Returns the amount of squares that are in between a piece's spot and the edge of the board
+    // Assumes the same directions as the ones from the sliding matrix
+    // [0] [4] [1]
+    // [7] [X] [5]
+    // [3] [6] [2]
     int numSquaresToEdge(int startSpot, int dir){ //TODO Finish this
-        return 0;
+        int directionalOffset = directionCorrection(dir);//No need to calculate this multiple times
+        int rowKey = 0; // Which row in the board it is at
+        int numSpaces = 0;
+
+        // Get the row key
+        // For each key in the known library
+        for(int i=0; i<FENKey.length; i++){
+            // Set this key as the highest ([0] = 0)
+            rowKey = FENKey[i];
+            // Whenever it happens to be larger, then we are at the highest row in the board
+            if(startSpot >= FENKey[i]) break; // Also equal, since it can be on the left side of the board
+        }
+
+        while(true){
+            int suggestedSpace = startSpot + directionalOffset * (numSpaces + 1);
+            // Because of the directions being limited by a a single number, we need to check different ones
+            // Up:
+            // Always larger than the rowKey, can be 1 less in dir=0
+            if(dir == 0 || dir == 4 || dir == 1){
+                if(suggestedSpace > rowKey) break; //TODO This is wrong, needs a looping thing
+                if(rowKey - 1 == suggestedSpace && dir == 0) break;
+            }
+            // Left is only a general check on below the rowKey
+            else if(dir == 7){
+                //if(rowKey - 1 == suggestedSpace) break;
+            }
+
+            numSpaces++;
+            break;
+        }
+
+
+
+        return numSpaces;
     }
 
     //TODO Make a method that takes two characters "a1" and converts it to a number on our grid
