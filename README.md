@@ -2,6 +2,34 @@
 
 This project aims to simulate chess, with an AI partner that uses minimax and alpha-beta pruning to make it's moves.
 
+## Development
+
+Made using Intellij 2020 and Java JDK 15.
+
+Some methods used in this code are supported only from 14 onwards.
+
+Example of a Java 14 feature:
+
+```java
+return switch (pieceType) {
+    case Bishop, Queen, Rook -> true;
+    default -> false;
+};
+```
+
+Versus a Java 11 compatible statement:
+
+```java
+switch (pieceType) {
+    case Bishop:
+    case Queen: 
+    case Rook:
+        return true;
+    default:
+        return false;
+};
+```
+
 ## File details
 
 ### Chess.java
@@ -30,6 +58,6 @@ Below are some articles and websites that I used in the creation of this project
 
 - [Simple overall board state evaluation](https://www.chessprogramming.org/Evaluation#Where_to_Start)
 - [Chess piece weights per square](https://www.chessprogramming.org/Simplified_Evaluation_Function)
-- [Grandmaster games](https://raw.githubusercontent.com/SebLague/Chess-AI/main/Assets/Book/Games.txt)
+- [Grandmaster games](https://raw.githubusercontent.com/SebLague/Chess-AI/main/Assets/Book/Games.txt), and [it's source](https://www.chess.com/games)
 - [Chess programming](https://web.archive.org/web/20071026090003/http://www.brucemo.com/compchess/programming/index.htm)
 - [Lazy Evaluation](https://www.chessprogramming.org/Lazy_Evaluation)
