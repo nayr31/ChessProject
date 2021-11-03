@@ -1,5 +1,3 @@
-import com.sun.source.tree.WhileLoopTree;
-
 import java.util.ArrayList;
 
 public class Board {
@@ -9,13 +7,9 @@ public class Board {
     boolean CanCastleWhiteKing, CanCastleWhiteQueen;
     boolean CanCastleBlackKing, CanCastleBlackQueen;
     int halfMoves, fullMoves;
-    boolean[] passants;
-    //List<Piece> whitePieces;
-    //List<Piece> blackPieces;
 
     Board() {
         spots = new Spot[64];
-        passants = new boolean[64];
         initiate();
         //popNormal();
         //popTest();
@@ -23,10 +17,8 @@ public class Board {
 
     //Populates the board with empty objects just in case
     void initiate() {
-        for (int i = 0; i < spots.length; i++) {
+        for (int i = 0; i < spots.length; i++)
             spots[i] = new Spot();
-            passants[i] = false;
-        }
     }
 
     //The normal board configuration
@@ -185,9 +177,9 @@ public class Board {
                 // This is really messy though lol, could be improved if we didn't need this != null check
                 // Since technically the whole first argument should take care of an empty space
                 if (target != null) {
-                    if (token.isFriendly(target)) break;
+                    if (token.isFriendly(target)) break; // Can't go into a friendly space, blocks path
 
-                    slidingMoves.add(new Move(startSpot, targetSpot));
+                    slidingMoves.add(new Move(startSpot, targetSpot)); // Can go into an enemy space, also blocks path
 
                     if (!token.isFriendly(target)) break;
                 } else {
@@ -205,11 +197,77 @@ public class Board {
         return knightMoves;
     }
 
-    // Pawn only goes forward, depending on color
+    // Pawn only goes forward, direction depending on color
     ArrayList<Move> generatePawnMoves(int startSpot, Piece token) {
         ArrayList<Move> pawnMoves = new ArrayList<>();
-        //TODO finish pawn moves (and enpassant)
+        // Determine how far the pawn can move depending on how far it has moved
+        int spacesToMove = 1;
+        if (token.hasMoved)
+            spacesToMove++;
+
+        // For each of the possible move distances
+        // This is just for moving forward, not taking pieces
+        for (int i = 0; i < spacesToMove; i++) {
+            int targetSpot = startSpot + pawnDirectionCorrection(token.isWhite) * i;
+            // Check to see if the target spot is within bounds
+            if (targetSpot < 63 & targetSpot > 0) {
+                // Target spot is within bounds
+                Piece target = spots[targetSpot].spotPiece;
+
+                // Space is occupied, cannot move forward
+                if (target != null) break;
+                // Otherwise, it is a possible move
+                pawnMoves.add(new Move(startSpot, targetSpot));
+            } else break; // Break in both instances
+        }
+
+        // Target taking
+        // Get the target directions of the piece depending on the color
+        int[] targetDir = pawnAttackDirectionCorrection(token.isWhite);
+        // PassantDir relates to the left-right relation of the targetDir
+        int[] passantDir = {7, 5};
+        // For each targeting direction
+        for (int i = 0; i < targetDir.length; i++) {
+            if (numSquaresToEdge(startSpot, targetDir[i]) >= 1) {
+                int targetSpot = startSpot + directionCorrection(targetDir[i]); // Board wise value of the target direction
+
+                Piece target = spots[targetSpot].spotPiece;
+
+                // Add the move if it is an enemy piece
+                if (target != null) {
+                    if (!token.isFriendly(target))
+                        pawnMoves.add(new Move(startSpot, targetSpot));
+                } else { // If the space is empty, we may be able to passant
+                    // We would normally check to see if there are enough spaces to the right or left, but diagonal ensures both
+                    // Make a new targetSpot where the pawn would be
+                    targetSpot = startSpot + directionCorrection(passantDir[i]);
+                    target = spots[targetSpot].spotPiece;
+                     if(target != null){ // There is a piece at the new targetSpot
+                         // Check if it is an enemy pawn that move delta is 16 (moved 2 spaces)
+                         if(target.pieceType == Piece.Type.Pawn
+                                 && !token.isFriendly(target)
+                                 && target.lastMove.moveDelta() == 16){
+                             pawnMoves.add(new Move(startSpot,targetSpot));
+                         }
+                     }
+                }
+            }
+        }
+
         return pawnMoves;
+    }
+
+    // Returns an array of target directions for the pawn
+    // Sorted [left, right]
+    int[] pawnAttackDirectionCorrection(boolean isWhite) {
+        if (isWhite) return new int[]{0, 1};
+        return new int[]{3, 2};
+    }
+
+    int pawnDirectionCorrection(boolean isWhite) {
+        if (isWhite)
+            return 8;
+        return -8;
     }
 
     // King can only go once in each direction, but also can't go where there are other colored moves present
@@ -250,7 +308,7 @@ public class Board {
         }
     }
 
-    String directionCorrectionString(int dir){
+    String directionCorrectionString(int dir) {
         switch (dir) {
             case 0:
                 return "Up-Left";
@@ -308,28 +366,28 @@ public class Board {
             // Duplicates removed (up, down)
 
             // Right
-            if(dir == 5){ // Right means that it loops to the next rowKey, so just do +8
-                if(suggestedSpace >= rowKey + 8) break;
+            if (dir == 5) { // Right means that it loops to the next rowKey, so just do +8
+                if (suggestedSpace >= rowKey + 8) break;
             }
             // Left
-            if(dir == 7){ // Left means that it goes lower than the rowKey
-                if(suggestedSpace < rowKey) break;
+            if (dir == 7) { // Left means that it goes lower than the rowKey
+                if (suggestedSpace < rowKey) break;
             }
             // Up-Right
-            if(dir == 1){ // Would go up, then loop around, +9 of start, meaning +16 of rowKey (2 rows up)
-                if(suggestedSpace == rowKey + 16) break;
+            if (dir == 1) { // Would go up, then loop around, +9 of start, meaning +16 of rowKey (2 rows up)
+                if (suggestedSpace == rowKey + 16) break;
             }
             // Down-Right
-            if(dir == 2){ // Down (-8) then right (+1), -7 of start, meaning (1 row down, then +1, which would be rowkey)
-                if(suggestedSpace == rowKey) break;
+            if (dir == 2) { // Down (-8) then right (+1), -7 of start, meaning (1 row down, then +1, which would be rowkey)
+                if (suggestedSpace == rowKey) break;
             }
             // Down-Left
-            if(dir == 3){ // -7 of the rowKey would be
-                if(suggestedSpace < rowKey - 8) break;
+            if (dir == 3) { // -7 of the rowKey would be
+                if (suggestedSpace < rowKey - 8) break;
             }
             // Up-Left
-            if(dir == 0){ // Go up a row
-                if(suggestedSpace >= rowKey + 7) break;
+            if (dir == 0) { // Go up a row
+                if (suggestedSpace >= rowKey + 7) break;
             }
 
             // No conditions found to stop, increase the amount of moves possible and set the new rowkey
@@ -340,7 +398,9 @@ public class Board {
         return numSpaces;
     }
 
-    int generateLocalRowKey(int suggestedSpace){
+    // Finds the rowKey value of the spot that is given
+    // A rowKey is the key values that start rows in the array
+    int generateLocalRowKey(int suggestedSpace) {
         int rowKey = 0;
         // Get the row key
         // For each key in the known library
@@ -357,7 +417,7 @@ public class Board {
     // [0] [4] [1]
     // [7] [X] [5]
     // [3] [6] [2]
-    void debugNumToEdge(int startSpot){
+    void debugNumToEdge(int startSpot) {
         System.out.println("Up from " + startSpot + ": " + numSquaresToEdge(startSpot, 4));
         System.out.println("Up-Right from " + startSpot + ": " + numSquaresToEdge(startSpot, 1));
         System.out.println("Right from " + startSpot + ": " + numSquaresToEdge(startSpot, 5));
@@ -366,6 +426,22 @@ public class Board {
         System.out.println("Down-Left from " + startSpot + ": " + numSquaresToEdge(startSpot, 3));
         System.out.println("Left from " + startSpot + ": " + numSquaresToEdge(startSpot, 7));
         System.out.println("Up-Left from " + startSpot + ": " + numSquaresToEdge(startSpot, 0));
+    }
+
+    // Converts board state input (such as "a5") to an index
+    int convertInputToIndex(String input) {
+        char[] arr = input.toCharArray();
+        if (arr.length != 2)
+            return -1;
+        // arr[0] is the letter, convert it down from ascii
+        int letterVal = arr[0] - 96 - 1;
+        int numberVal = (arr[1] - 49) * 8;
+        int combinedVal = letterVal + numberVal;
+        if (combinedVal < 0 || combinedVal > 63) {
+            System.out.println("Something went wrong converting the value " + input);
+            return -1;
+        }
+        return combinedVal;
     }
 
     //TODO Make a method that takes two characters "a1" and converts it to a number on our grid

@@ -11,6 +11,8 @@ public class Piece {
 
     Type pieceType = Type.None;
     boolean isWhite;
+    boolean hasMoved = false;
+    Move lastMove = new Move(0,0);
 
     Piece(char c, boolean isWhite){
         switch (Character.toLowerCase(c)) {
@@ -33,7 +35,7 @@ public class Piece {
                 pieceType = Type.King;
                 break;
             default:
-                System.out.println("Failed to convert FEM character into piece.");
+                System.out.println("Failed to convert FEM character into piece: " + c);
                 break;
         }
         this.isWhite = isWhite;

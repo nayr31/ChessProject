@@ -8,4 +8,8 @@ public class Move {
         this.startSpot = startSpot;
         this.endSpot = endSpot;
     }
+
+    int moveDelta(){
+        return Math.abs(endSpot - startSpot);
+    }
 }
