@@ -1,9 +1,9 @@
 class Chess {
 
     Chess(){
-        Board.initiate();
+        //Board.initiate();
 
-
+        Scorer.initiate();
     }
 
     public static void main(String[] args) {
