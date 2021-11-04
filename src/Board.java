@@ -1,52 +1,50 @@
 import java.util.ArrayList;
 
 public class Board {
-    Spot[] spots;
+    static Spot[] spots = new Spot[64];
     static int[] FENKey = {56, 48, 40, 32, 24, 16, 8, 0};
-    boolean isWhiteTurn;
-    boolean CanCastleWhiteKing, CanCastleWhiteQueen;
-    boolean CanCastleBlackKing, CanCastleBlackQueen;
-    int halfMoves, fullMoves;
-    ArrayList<Move> whiteMoves = new ArrayList<>();
-    ArrayList<Move> blackMoves = new ArrayList<>();
-    ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
-    private static class LastMoveRecord {
-        private Move move = null;
-        private Piece takenPiece = null;
-        public LastMoveRecord(Move move, Piece takenPiece) {
+    static boolean isWhiteTurn = true;
+    static int halfMoves, fullMoves;
+    static boolean CanCastleWhiteKing, CanCastleWhiteQueen;
+    static boolean CanCastleBlackKing, CanCastleBlackQueen;
+    // Keep track of which moves each side can take
+    static ArrayList<Move> whiteMoves = new ArrayList<>();
+    static ArrayList<Move> blackMoves = new ArrayList<>();
+    // This is the last move record, a record of moves and pieces that were taken during that move
+    // This is used recursively to make consecutive moves and to undo them as well
+    //
+    static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
+    static class LastMoveRecord {
+        private final Move move;
+        private final Piece takenPiece;
+        boolean isRoot;
+        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot) {
             this.move = move;
             this.takenPiece = takenPiece;
+            this.isRoot = isRoot;
         }
-        void recordMove(Move move, Piece piece){
-            this.move = move;
-            this.takenPiece = piece;
+        public String toString(){
+            return move.toString();
         }
     }
 
-    Board() {
-        spots = new Spot[64];
-        initiate();
-        //popNormal();
-        //popTest();
-    }
-
-    //Populates the board with empty objects just in case
-    void initiate() {
+    //Populates the board with empty objects
+    static void initiate() {
         for (int i = 0; i < spots.length; i++)
             spots[i] = new Spot();
     }
 
     //The normal board configuration
-    void popNormal() {
+    static void popNormal() {
         popFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     }
 
-    void popTest() {
+    static void popTest() {
         popFromFEN("4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1");
     }
 
     //Populates the board from the FEN string
-    void popFromFEN(String inputString) {
+    static void popFromFEN(String inputString) {
         //Split the input into its separate functions:
         // [0] = Board spaces
         // [1] = Turn to move (b - black, w - white)
@@ -98,14 +96,68 @@ public class Board {
         CanCastleWhiteQueen = false;
         CanCastleBlackKing = false;
         CanCastleBlackQueen = false;
+        // Check which can (ie. havn't moved yet)
         for (char c : varInput[2].toCharArray()) {
             switch (c) {
-                case 'K' -> CanCastleWhiteKing = true;
-                case 'Q' -> CanCastleWhiteQueen = true;
-                case 'k' -> CanCastleBlackKing = true;
-                case 'q' -> CanCastleBlackQueen = true;
+                case 'K' : // White king side
+                    CanCastleWhiteKing = true;
+                    break;
+                case 'Q' :
+                    CanCastleWhiteQueen = true;
+                    break;
+                case 'k' :
+                    CanCastleBlackKing = true;
+                    break;
+                case 'q' :
+                    CanCastleBlackQueen = true;
+                    break;
             }
         }
+        // Then punish the ones that have moved
+        // [King ... Queen]
+        //  56   ...  63   Black
+        //  0    ...  7    White
+        // Check every spot
+        for (int i = 0; i < spots.length; i++) {
+            Piece token = spots[i].spotPiece;
+            if(token != null){
+                if (token.pieceType == Piece.Type.Rook){
+                    if(token.isWhite){
+                        if(!CanCastleWhiteKing){
+                            // If you can castle the white queen side, and this is on that spot
+                            if(CanCastleWhiteQueen && i == 7){
+                                // Then don't do anything, since this is the white queen rook and it already hasn't moved
+                            } else{ // Otherwise, either the king side moved or the queen isn't allowed (and this is the queen)
+                                token.hasMoved = true;
+                            }
+                        }
+                        if(!CanCastleWhiteQueen){
+                            if(CanCastleWhiteKing && i == 0){
+                            } else{
+                                token.hasMoved = true;
+                            }
+                        }
+                    } else{
+                        if(!CanCastleBlackKing){
+                            if(CanCastleBlackQueen && i == 63){
+                            } else{
+                                token.hasMoved = true;
+                            }
+                        }
+
+                        if(!CanCastleBlackQueen){
+                            if(CanCastleBlackKing && i == 56){
+                            } else{
+                                token.hasMoved = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+
 
         // --------- Step 3 ---------
         // Which pawns can be en-passant-ed
@@ -115,7 +167,17 @@ public class Board {
         if (varInput[3].length() != 1) { // If the space is not empty, diagnose it
             // If there is a viable passant move, then check every two spaces for them
             for (int i = 0; i < varInput[3].length(); i += 2) {
-                //TODO Finish variable declaration from FEN
+                // Get the space of the passant target
+                String passantString = varInput[3].substring(i, i+2);
+                // Get the int interpretation of the target square
+                int passantSquare = convertInputToIndex(passantString);
+                // Determine the spaceDelta, which offsets where the piece and its startSpot is
+                int spaceDelta = 8;
+                if(passantSquare > 23) // Black piece
+                    spaceDelta = -8;
+                // Set the piece's last move with a moveDelta of 2
+                spots[passantSquare + spaceDelta].spotPiece.lastMove =
+                        new Move(passantSquare - spaceDelta, passantSquare + spaceDelta);
             }
         }
 
@@ -130,7 +192,7 @@ public class Board {
 
     // Populates all moves that each player can take
     // Required per turn, since some may become invalid
-    void populateMoveLists(){
+    static void populateMoveLists(){
         // Populate the general piece moves (not king)
         whiteMoves = getGeneralPieceMoves(true);
         blackMoves = getGeneralPieceMoves(false);
@@ -139,10 +201,28 @@ public class Board {
         blackMoves.addAll(getKingMoves(false));
     }
 
+    // Enemy side calling for move generation
+    // Sequence:
+    //  - All moves are generated in populateMoveLists()
+    //  - Player (white) makes move
+    //  - If king, spotIsCoveredByPiece()
+    //  - Afterwards in both cases populateColorSide(black)
+    //  - Bad move (ie, puts king in check), unmake it and populateColorSide(black) again
+    //  - Good move, return a good result
+    void populateColorSide(boolean isWhite){
+        if(isWhite){
+            whiteMoves = getGeneralPieceMoves(true);
+            whiteMoves.addAll(getKingMoves(true));
+        } else{
+            blackMoves = getGeneralPieceMoves(false);
+            blackMoves.addAll(getKingMoves(false));
+        }
+    }
+
     // Generate a list of all moves that each piece can preform, following certain conditions:
     // 1 - Is the correct color of whomever turn it is
     // 2 - Different pieces need different methods to determine which moves are possible
-    ArrayList<Move> getGeneralPieceMoves(boolean isWhite) {
+    static ArrayList<Move> getGeneralPieceMoves(boolean isWhite) {
         ArrayList<Move> moves = new ArrayList<>();
 
         // For each spot on the board
@@ -172,7 +252,7 @@ public class Board {
     }
 
     // King moves need to be calculated afterwards because of check restrictions
-    ArrayList<Move> getKingMoves(boolean isWhite){
+    static ArrayList<Move> getKingMoves(boolean isWhite){
         ArrayList<Move> retrievedMoves = new ArrayList<>();
         for (int startSpot = 0; startSpot < 64; startSpot++) {
             Piece token = spots[startSpot].spotPiece;
@@ -185,7 +265,7 @@ public class Board {
     }
 
     // Long range sliding pieces (Bishop, Queen and Rook)
-    ArrayList<Move> generateSlidingMoves(int startSpot, Piece token) {
+    static ArrayList<Move> generateSlidingMoves(int startSpot, Piece token) {
         ArrayList<Move> slidingMoves = new ArrayList<>();
         // Set the start index to start at 0 for our bishop (only diagonals), so it ends at 4
         // And the end index to 8 if for our Rook, since it starts at 4
@@ -230,14 +310,14 @@ public class Board {
     }
 
     // Just the knight, as it is special with the L pattern
-    ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {
+    static ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {
         ArrayList<Move> knightMoves = new ArrayList<>();
         //TODO Finish knight moves
         return knightMoves;
     }
 
     // Pawn only goes forward, direction depending on color
-    ArrayList<Move> generatePawnMoves(int startSpot, Piece token) {
+    static ArrayList<Move> generatePawnMoves(int startSpot, Piece token) {
         ArrayList<Move> pawnMoves = new ArrayList<>();
         // Determine how far the pawn can move depending on how far it has moved
         int spacesToMove = 1;
@@ -299,7 +379,7 @@ public class Board {
 
 
     // Generates a list of moves for pawns on all of their attacking spots
-    ArrayList<Move> generateAttackingPawnMoveSpots(boolean isWhite){ // The passed isWhite value is the enemy's
+    static ArrayList<Move> generateAttackingPawnMoveSpots(boolean isWhite){ // The passed isWhite value is the enemy's
         ArrayList<Move> pawnMoves = new ArrayList<>();
         int[] targetDir = pawnAttackDirectionCorrection(!isWhite);
 
@@ -324,19 +404,19 @@ public class Board {
 
     // Returns an array of target directions for the pawn
     // Sorted [left, right]
-    int[] pawnAttackDirectionCorrection(boolean isWhite) {
+    static int[] pawnAttackDirectionCorrection(boolean isWhite) {
         if (isWhite) return new int[]{0, 1};
         return new int[]{3, 2};
     }
 
-    int pawnDirectionCorrection(boolean isWhite) {
+    static int pawnDirectionCorrection(boolean isWhite) {
         if (isWhite)
             return 8;
         return -8;
     }
 
     // King can only go once in each direction, but also can't go where there are other colored moves present
-    ArrayList<Move> generateKingMoves(int startSpot, Piece token) {
+    static ArrayList<Move> generateKingMoves(int startSpot, Piece token) {
         ArrayList<Move> kingMoves = new ArrayList<>();
 
 
@@ -376,7 +456,7 @@ public class Board {
 
     // Checks to see if a known enemy move is covers a spot with a move
     // Honestly, I should just be going with the "after" version
-    boolean spotIsCoveredByEnemyPiece(int spot, boolean isWhite){
+    static boolean spotIsCoveredByEnemyPiece(int spot, boolean isWhite){
         class Attacker{
             public Attacker(Move move, Piece piece) {
                 this.move = move;
@@ -401,12 +481,13 @@ public class Board {
         }
 
         // This resulting list will be all attacking moves on that spot
-        // If there are any, then the check fails
-        for (Attacker attacker:attackers){
-            return true;
+        // If there are any that aren't pawns, then the check fails
+        for (Attacker attacker:attackers) {
+            if(attacker.piece.pieceType != Piece.Type.Pawn)
+                return true; // Otherwise, the list has another piece that ends on this square
         }
 
-        // Pawns have moves that aren't attacks, so we need to check those first also
+        // Pawns have moves that aren't attacks, so we need to check those separately
         // If the spot is located in that list, then it is covered
         ArrayList<Move> pawnAttackingSpots = generateAttackingPawnMoveSpots(isWhite);
         for(Move m:pawnAttackingSpots){
@@ -424,7 +505,7 @@ public class Board {
     // [0] [4] [1]    [7]  [8]  [9]
     // [7] [X] [5] -> [-1] [X]  [1]
     // [3] [6] [2]    [-9] [-8] [-7]
-    int directionCorrection(int dir) {
+    static int directionCorrection(int dir) {
         switch (dir) {
             case 0:
                 return 7;
@@ -479,7 +560,7 @@ public class Board {
     //  [7]  [ ]  [ ]  [ ]  [4]
     //  [ ]  [6]  [ ]  [5]  [ ]
     // Requires special checks, since you can always go -9 or whatever, but it wont be caught by the board
-    int directionConversionKnight(int dir) { //TODO Finish directional conversion/check for knight
+    static int directionConversionKnight(int dir) { //TODO Finish directional conversion/check for knight
         return 0;
     }
 
@@ -488,7 +569,7 @@ public class Board {
     // [0] [4] [1]
     // [7] [X] [5]
     // [3] [6] [2]
-    int numSquaresToEdge(int startSpot, int dir) { //TODO Finish numSquaresToEdge
+    static int numSquaresToEdge(int startSpot, int dir) {
         int directionalOffset = directionCorrection(dir);//No need to calculate this multiple times
         int numSpaces = 0;
         int rowKey = generateLocalRowKey(startSpot); // Which row in the board it is at
@@ -540,7 +621,7 @@ public class Board {
 
     // Finds the rowKey value of the spot that is given
     // A rowKey is the key values that start rows in the array
-    int generateLocalRowKey(int suggestedSpace) {
+    static int generateLocalRowKey(int suggestedSpace) {
         int rowKey = 0;
         // Get the row key
         // For each key in the known library
@@ -557,7 +638,7 @@ public class Board {
     // [0] [4] [1]
     // [7] [X] [5]
     // [3] [6] [2]
-    void debugNumToEdge(int startSpot) {
+    static void debugNumToEdge(int startSpot) {
         System.out.println("Up from " + startSpot + ": " + numSquaresToEdge(startSpot, 4));
         System.out.println("Up-Right from " + startSpot + ": " + numSquaresToEdge(startSpot, 1));
         System.out.println("Right from " + startSpot + ": " + numSquaresToEdge(startSpot, 5));
@@ -569,7 +650,7 @@ public class Board {
     }
 
     // Converts board state input (such as "a5") to an index
-    int convertInputToIndex(String input) {
+    static int convertInputToIndex(String input) {
         char[] arr = input.toCharArray();
         if (arr.length != 2)
             return -1;
@@ -584,14 +665,43 @@ public class Board {
         return combinedVal;
     }
 
+    // Checks to see if an over-arching move is in one of the lists
+    static boolean moveIsInList(Move move, boolean isWhite){
+        // The move in this context searches through the deepness of the move, checking its overall final position
+        ArrayList<Move> possibleMoves = new ArrayList<>();
+        for (Move listMove:isWhite? whiteMoves : blackMoves) {
+            if(listMove.startSpot == move.startSpot)
+                possibleMoves.add(listMove);
+        }
+        // After searching through all of the start spots, check to see if the end spots of those embedded moves works
+        if(possibleMoves.size() != 0){
+            for(Move possibleMove:possibleMoves){
+                int endSpotInMove = endSpotInMove(possibleMove);
+                Move finalMove = new Move(possibleMove.startSpot, endSpotInMove);
+                boolean moveIsInList = finalMove.startSpot == move.startSpot && finalMove.endSpot == move.endSpot;
+                if(moveIsInList) return true;
+            }
+        }
+        return false;
+    }
+
+    // Recursively searches through a move and returns the final
+    static int endSpotInMove(Move move){
+        // No more moves left in the series
+        if(move.embeddedMove == null) return move.endSpot;
+        // If it is not castling (ie, move series involves different pieces)
+        if(move.embeddedMove.isSamePiece)
+            return endSpotInMove(move.embeddedMove.embeddedMove);
+        return move.endSpot;
+    }
+
     //Standard java inherited method override
-    public String toString() {
+    static public String boardString() {
         StringBuilder out = new StringBuilder();
         String borderString = "----------------------------";
         String letterString = "+  a   b   c   d   e   f   g   h\n";
 
         out.append(borderString).append("\n");
-        out.append(letterString);
 
         //63 - j - i*8, making it start at the left of the board and go right
         for (int i = 0; i < 8; i++) {//row on board
@@ -603,36 +713,41 @@ public class Board {
             //So that when the row is over, we can close it and make a new line
             out.append("|\n");
         }
+        out.append(letterString);
         out.append(borderString);
         return out.toString();
     }
 
-    void showBoard() {
-        System.out.println(this);
+    static void showBoard() {
+        System.out.println(boardString());
     }
 
     // Preforms a move on the board and stores the information about what happened
-    void makeMove(Move move){
+    static void makeMove(Move move, boolean isRoot){
         // Record if there was a piece that was taken with the move data
         Piece takenPiece = spots[move.endSpot].spotPiece;
-        lastMoveRecords.add(new LastMoveRecord(move, takenPiece));
+        lastMoveRecords.add(new LastMoveRecord(move, takenPiece, isRoot));
         // Move the attacking piece into the end spot of the move
         Piece attackingPiece = spots[move.startSpot].spotPiece;
         spots[move.startSpot].spotPiece = null;
         spots[move.endSpot].spotPiece = attackingPiece;
+        // Recall this for embedded moves
+        if(move.embeddedMove != null) makeMove(move.embeddedMove.embeddedMove, false);
     }
 
     // Unmakes and reverses the results of the last preformed move
-    void unmakeMove(){
+    static void unmakeMove(){
         // Remove the last move that occurred
         LastMoveRecord lastMoveRecord = lastMoveRecords.remove(lastMoveRecords.size()-1);
         // Reverse the movement of the attacking piece
         spots[lastMoveRecord.move.startSpot].spotPiece = spots[lastMoveRecord.move.endSpot].spotPiece;
         // Replace the attacked piece
         spots[lastMoveRecord.move.endSpot].spotPiece = lastMoveRecord.takenPiece;
+        // Recurse until we get to a root move
+        if(!lastMoveRecord.isRoot) unmakeMove();
     }
 
-    void showDebugValues() {
+    static void showDebugValues() {
         String out = "";
 
         out += "White's turn: " + isWhiteTurn + "\n";

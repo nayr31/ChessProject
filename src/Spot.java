@@ -1,9 +1,5 @@
 public class Spot {
-    Piece spotPiece;
-
-    Spot(){
-        spotPiece = null;
-    }
+    Piece spotPiece = null;
 
     public String toString(){
         return spotPiece != null ? spotPiece.toString() : " ";

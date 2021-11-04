@@ -13,26 +13,34 @@ public class Piece {
     boolean isWhite;
     boolean hasMoved = false;
     Move lastMove = new Move(0,0);
+    String name;
 
     Piece(char c, boolean isWhite){
+        name = isWhite ? "White " : "Black ";
         switch (Character.toLowerCase(c)) {
             case 'r':
                 pieceType = Type.Rook;
+                name += "Rook";
                 break;
             case 'n':
                 pieceType = Type.Knight;
+                name += "Knight";
                 break;
             case 'p':
                 pieceType = Type.Pawn;
+                name += "Pawn";
                 break;
             case 'b':
                 pieceType = Type.Bishop;
+                name += "Bishop";
                 break;
             case 'q':
                 pieceType = Type.Queen;
+                name += "Queen";
                 break;
             case 'k':
                 pieceType = Type.King;
+                name += "King";
                 break;
             default:
                 System.out.println("Failed to convert FEM character into piece: " + c);
