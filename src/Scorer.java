@@ -1,10 +1,8 @@
-import Piece.Type;
-
 public class Scorer {
     
-    // Below are the score per spot multipliers from the website https://www.chessprogramming.org/Simplified_Evaluation_Function
+    // Below are the score per spot Multiplieripliers from the website https://www.chessprogramming.org/Simplified_Evaluation_Function
     // Because these are copy pasted, they don't work with the linear interpretation of the system, and they need to be "reversed"
-    static int[] pawnMult = new int[]
+    static int[] pawnMultiplier = new int[]
     {
         0,  0,  0,  0,  0,  0,  0,  0,
         50, 50, 50, 50, 50, 50, 50, 50,
@@ -16,7 +14,7 @@ public class Scorer {
          0,  0,  0,  0,  0,  0,  0,  0
     };
 
-    static int[] knightMult = new int[]
+    static int[] knightMultiplier = new int[]
     {
         -50,-40,-30,-30,-30,-30,-40,-50,
         -40,-20,  0,  0,  0,  0,-20,-40,
@@ -28,7 +26,7 @@ public class Scorer {
         -50,-40,-30,-30,-30,-30,-40,-50
     };
 
-    static int[] bishopMult = new int[]
+    static int[] bishopMultiplier = new int[]
     {
         -20,-10,-10,-10,-10,-10,-10,-20,
         -10,  0,  0,  0,  0,  0,  0,-10,
@@ -40,7 +38,7 @@ public class Scorer {
         -20,-10,-10,-10,-10,-10,-10,-20,    
     };
 
-    static int[] rookMult = new int[]
+    static int[] rookMultiplier = new int[]
     {
         0,  0,  0,  0,  0,  0,  0,  0,
         5, 10, 10, 10, 10, 10, 10,  5,
@@ -52,7 +50,7 @@ public class Scorer {
         0,  0,  0,  5,  5,  0,  0,  0
     };
 
-    static int[] queenMult = new int[]
+    static int[] queenMultiplier = new int[]
     {
         -20,-10,-10, -5, -5,-10,-10,-20,
         -10,  0,  0,  0,  0,  0,  0,-10,
@@ -64,7 +62,7 @@ public class Scorer {
         -20,-10,-10, -5, -5,-10,-10,-20
     };
 
-    static int[] kingEarlyMult = new int[]{
+    static int[] kingEarlyMultiplier = new int[]{
         -30,-40,-40,-50,-50,-40,-40,-30,
         -30,-40,-40,-50,-50,-40,-40,-30,
         -30,-40,-40,-50,-50,-40,-40,-30,
@@ -75,7 +73,7 @@ public class Scorer {
         20, 30, 10,  0,  0, 10, 30, 20
     };
 
-    static int[] kingLateMult = new int[]
+    static int[] kingLateMultiplier = new int[]
     {
         -50,-40,-30,-20,-20,-30,-40,-50,
         -30,-20,-10,  0,  0,-10,-20,-30,
@@ -86,6 +84,15 @@ public class Scorer {
         -30,-30,  0,  0,  0,  0,-30,-30,
         -50,-30,-30,-30,-30,-30,-30,-50
     };
+
+    static int[] pawnMultiplierBlack;
+    static int[] rookMultiplierBlack;
+    static int[] bishopMultiplierBlack;
+    static int[] queenMultiplierBlack;
+    static int[] knightMultiplierBlack;
+    static int[] kingEarlyMultiplierBlack;
+    static int[] kingLateMultiplierBlack;
+    
 
     // Returns the literal interpretation of a piece value without multipliers
     // P = 100
@@ -110,15 +117,24 @@ public class Scorer {
         return -1;
     }
 
+    // Required to run exactly once before using the score boards
     static void initiate(){
         // We need to convert the arrays from their current implementation into one that represents our board
-        pawnMult = convertArray(pawnMult);
-        knightMult = convertArray(knightMult);
-        rookMult = convertArray(rookMult);
-        queenMult = convertArray(queenMult);
-        bishopMult = convertArray(bishopMult);
-        kingLateMult = convertArray(kingLateMult);
-        kingEarlyMult = convertArray(kingEarlyMult);
+        pawnMultiplier = convertArray(pawnMultiplier);
+        knightMultiplier = convertArray(knightMultiplier);
+        rookMultiplier = convertArray(rookMultiplier);
+        queenMultiplier = convertArray(queenMultiplier);
+        bishopMultiplier = convertArray(bishopMultiplier);
+        kingLateMultiplier = convertArray(kingLateMultiplier);
+        kingEarlyMultiplier = convertArray(kingEarlyMultiplier);
+        // Then we need to make black colored versions
+        pawnMultiplierBlack = switchColorOfArray(pawnMultiplier);
+        knightMultiplierBlack = switchColorOfArray(knightMultiplier);
+        rookMultiplierBlack = switchColorOfArray(rookMultiplier);
+        queenMultiplierBlack = switchColorOfArray(queenMultiplier);
+        bishopMultiplierBlack = switchColorOfArray(bishopMultiplier);
+        kingLateMultiplierBlack = switchColorOfArray(kingLateMultiplier);
+        kingEarlyMultiplierBlack = switchColorOfArray(kingEarlyMultiplier);
     }
 
     static String printArray(int[] arr) {
@@ -143,21 +159,33 @@ public class Scorer {
         return out.toString();
     }
 
+    // Converts the copy-pasted array into our linear scale interpretation of it
     static int[] convertArray(int[] arr){
         int[] tempArr = new int[arr.length];
         for(int i=0; i<8; i++){
             for(int j=0;j<8;j++){
                 int arrIndex = i*8 + j;
                 int value = arr[arrIndex];
-                //int newIndex = (7-i)*8 + j;
                 int newIndex = 63 - j - i*8;
                 tempArr[newIndex] = value;
             }
         }
-        arr = tempArr;
         return tempArr;
     }
+    
+    // Switches the color interpretation of the score board array
+    static int[] switchColorOfArray(int[] arr){
+        int[] tempArray = new int[arr.length];
+        for (int i = 7; i >= 0; i--) {
+            for (int j = 0; j < 8; j++) {
+                int newArrIndex = j + i*8;
+                tempArray[newArrIndex] = (7-i)*8 + j;
+            }
+        }
+        return tempArray;
+    }
 
+    // A check to determine if the game state is in lategame or not
     static boolean isLateGame(Spot[] spots){
         boolean whiteHasQueen = false;
         boolean blackHasQueen = false;
@@ -165,28 +193,25 @@ public class Scorer {
         int numBlack = 0;
 
         // Count some values of the piece information
-        for (int i = 0; i < spots.length; i++) {
-            Piece spotPiece = spots[i].spotPiece;
-            if(spotPiece != null){
-                if(spotPiece.pieceType == Piece.Type.Queen){
-                    if(spotPiece.isWhite)
+        for (Spot spot : spots) {
+            Piece spotPiece = spot.spotPiece;
+            if (spotPiece != null) {
+                if (spotPiece.pieceType == Piece.Type.Queen) {
+                    if (spotPiece.isWhite)
                         whiteHasQueen = true;
                     else
                         blackHasQueen = true;
-                } else{
-                    if(spotPiece.isWhite)
-                        numWhite ++;
+                } else {
+                    if (spotPiece.isWhite)
+                        numWhite++;
                     else
-                        numBlack ++;
+                        numBlack++;
                 }
             }
         }
 
         // If both sides have lost their queens, or one has and is losing piece number wise
-        if((!whiteHasQueen && !blackHasQueen) || ((!whiteHasQueen && numWhite < numBlack) || (!blackHasQueen && numBlack < numWhite)))
-            return true;
-
-        return false;
+        return (!whiteHasQueen && !blackHasQueen) || ((!whiteHasQueen && numWhite < numBlack) || (!blackHasQueen && numBlack < numWhite));
     }
 
     // Scores the board according to how White is doing
