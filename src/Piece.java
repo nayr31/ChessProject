@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Piece {
     enum Type {
         Pawn,
@@ -12,7 +14,7 @@ public class Piece {
     Type pieceType = Type.None;
     boolean isWhite;
     boolean hasMoved = false;
-    Move lastMove = new Move(0,0);
+    ArrayList<Move> lastMoves = new ArrayList<>();
     String name;
 
     Piece(char c, boolean isWhite){
@@ -70,6 +72,29 @@ public class Piece {
         return Boolean.compare(this.isWhite, otherToken.isWhite) == 0;
     }
 
+    // Returns the literal interpretation of a piece value without multipliers
+    // P = 100
+    // N = 320
+    // B = 330
+    // R = 500
+    // Q = 900
+    // K = 20000
+    int getPieceValue(){
+        if(pieceType == Piece.Type.Pawn)
+            return 100;
+        else if(pieceType == Piece.Type.Knight)
+            return 320;
+        else if(pieceType == Piece.Type.Bishop)
+            return 330;
+        else if(pieceType == Piece.Type.Rook)
+            return 500;
+        else if(pieceType == Piece.Type.Queen)
+            return 900;
+        else if(pieceType == Piece.Type.King)
+            return 20000;
+        return -1;
+    }
+
     //Maybe less efficient than setting the spot to just store the value?
     public String toString(){
         switch(pieceType){
@@ -91,5 +116,18 @@ public class Piece {
                 break;
         }
         return "Error";
+    }
+
+    Move getLastMove(){
+        return lastMoves.get(lastMoves.size()-1);
+    }
+
+    void changeLastMove(Move move){
+        forget();
+        lastMoves.add(move);
+    }
+
+    void forget(){
+        lastMoves.remove(lastMoves.size()-1);
     }
 }

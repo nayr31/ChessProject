@@ -40,15 +40,20 @@ public class MoveCoordinator {
     // King moves need to be calculated afterwards because of check restrictions
     static ArrayList<Move> getKingMoves(boolean isWhite) {
         Spot[] spots = Board.getSpots();
-        ArrayList<Move> retrievedMoves = new ArrayList<>();
+        int kingSpot = getKingSpot(isWhite);
+        if (kingSpot == -1) return null;
+        else return generateKingMoves(kingSpot, spots[kingSpot].spotPiece);
+    }
+
+    static int getKingSpot(boolean isWhite) {
+        Spot[] spots = Board.getSpots();
         for (int startSpot = 0; startSpot < 64; startSpot++) {
             Piece token = spots[startSpot].spotPiece;
             if (token.pieceType == Piece.Type.King && token.isWhite == isWhite) {
-                retrievedMoves = generateKingMoves(startSpot, token);
-                break;
+                return startSpot;
             }
         }
-        return retrievedMoves;
+        return -1;
     }
 
     // Long range sliding pieces (Bishop, Queen and Rook)
@@ -154,7 +159,7 @@ public class MoveCoordinator {
                         // Check if it is an enemy pawn that move delta is 16 (moved 2 spaces)
                         if (target.pieceType == Piece.Type.Pawn
                                 && !token.isFriendly(target)
-                                && target.lastMove.moveDelta() == 16) {
+                                && target.getLastMove().moveDelta() == 16) {
                             // Add the move, but make the spot that dies the enemy pawn
                             pawnMoves.add(new Move(startSpot, targetSpot, new Move(targetSpot, passantTargetSpot)));
                         }
@@ -225,7 +230,7 @@ public class MoveCoordinator {
         if (!token.hasMoved) { // (5)
             if (spotIsNotCoveredByEnemyPiece(startSpot, token.isWhite)) { // (3)
                 // (1,2,4,6)
-                if (token.isWhite ? Board.CanCastleWhiteQueen : Board.CanCastleBlackQueen){
+                if (token.isWhite ? Board.CanCastleWhiteQueen : Board.CanCastleBlackQueen) {
                     Move move = makeCastle(token, startSpot, false);
                     if (move != null)
                         kingMoves.add(move);
@@ -238,6 +243,22 @@ public class MoveCoordinator {
             }
         }
 
+        return kingMoves;
+    }
+
+    // Returns the general vicinity of "legal" king moves
+    static ArrayList<Move> getGeneralKingMoves(int kingSpot, boolean isWhite) {
+        Spot[] spots = Board.getSpots();
+        ArrayList<Move> kingMoves = new ArrayList<>();
+
+        for (int i = 0; i < 8; i++) {
+            int dirVal = Director.directionCorrection(i);
+            if (numSquaresToEdge(kingSpot, i) >= 1) {
+                int targetSpot = kingSpot + Director.directionCorrection(i);
+                if (spots[targetSpot].spotPiece == null)
+                    kingMoves.add(new Move(kingSpot, targetSpot));
+            }
+        }
         return kingMoves;
     }
 
@@ -289,8 +310,7 @@ public class MoveCoordinator {
         return isKingSide ? 7 : 5;
     }
 
-    // Checks to see if a known enemy move is covers a spot with a move
-    static boolean spotIsNotCoveredByEnemyPiece(int spot, boolean isWhite) {
+    static boolean spotIsNotCoveredByEnemyPiece(int spot, boolean isWhite, ArrayList<Move> enemyMoveList) {
         Spot[] spots = Board.getSpots();
         class Attacker {
             public Attacker(Move move, Piece piece) {
@@ -301,14 +321,10 @@ public class MoveCoordinator {
             final Move move;
             final Piece piece;
         }
-        ArrayList<Move> enemyMoveList;
         ArrayList<Attacker> attackers = new ArrayList<>();
         // Determine which enemy list to search through
-        if (isWhite) {
-            enemyMoveList = Board.blackMoves;
-        } else {
-            enemyMoveList = Board.whiteMoves;
-        }
+        if (enemyMoveList == null)
+            enemyMoveList = getGeneralPieceMoves(isWhite);
 
         // Iterate through the moves list and keep track at all pieces attacking that spot
         for (Move move : enemyMoveList) {
@@ -334,6 +350,10 @@ public class MoveCoordinator {
         return true;
     }
 
+    // Checks to see if a known enemy move is covers a spot with a move
+    static boolean spotIsNotCoveredByEnemyPiece(int spot, boolean isWhite) {
+        return spotIsNotCoveredByEnemyPiece(spot, isWhite, null);
+    }
 
     // Returns the amount of squares that are in between a piece's spot and the edge of the board
     // Assumes the same directions as the ones from the sliding matrix
@@ -403,5 +423,98 @@ public class MoveCoordinator {
             if (suggestedSpace >= j) break; // Also equal, since it can be on the left side of the board
         }
         return rowKey;
+    }
+
+    // Checks to see if an over-arching move is in one of the lists
+    static boolean moveIsInList(Move move, boolean isWhite, ArrayList<Move> whiteMoves, ArrayList<Move> blackMoves) {
+        // The move in this context searches through the deepness of the move, checking its overall final position
+        ArrayList<Move> possibleMoves = new ArrayList<>();
+        for (Move listMove : isWhite ? whiteMoves : blackMoves) {
+            if (listMove.startSpot == move.startSpot)
+                possibleMoves.add(listMove);
+        }
+        // After searching through all of the start spots, check to see if the end spots of those embedded moves works
+        if (possibleMoves.size() != 0) {
+            for (Move possibleMove : possibleMoves) {
+                int endSpotInMove = endSpotInMove(possibleMove);
+                Move finalMove = new Move(possibleMove.startSpot, endSpotInMove);
+                boolean moveIsInList = finalMove.startSpot == move.startSpot && finalMove.endSpot == move.endSpot;
+                if (moveIsInList) return true;
+            }
+        }
+        return false;
+    }
+
+    // Recursively searches through a move and returns the final
+    static int endSpotInMove(Move move) {
+        // No more moves left in the series
+        if (move.embeddedMove == null) return move.endSpot;
+        // If it is not castling (ie, move series involves different pieces)
+        if (move.embeddedMove.isSamePiece)
+            return endSpotInMove(move.embeddedMove.embeddedMove);
+        return move.endSpot;
+    }
+
+    static ArrayList<Move> cullPawnMoves(ArrayList<Move> moves) {
+        ArrayList<Move> hoopla = new ArrayList<>();
+        Spot[] spots = Board.getSpots();
+        for (Move move : moves) {
+            Piece token = spots[move.startSpot].spotPiece;
+            if (token.pieceType != Piece.Type.Pawn)
+                hoopla.add(move);
+        }
+        return hoopla;
+    }
+
+    public static ArrayList<Move> generateLegalMoves() {
+        TerminalControl.sendStatusMessage("Generating legal moves...");
+        ArrayList<Move> moves = new ArrayList<>();
+        Spot[] spots = Board.getSpots();
+
+        int kingSpot = getKingSpot(Board.isWhiteTurn);
+        ArrayList<Move> friendlyPieceMoves = getGeneralPieceMoves(Board.isWhiteTurn);
+        ArrayList<Move> friendlyPawnMoves = generateAttackingPawnMoveSpots(Board.isWhiteTurn);
+        ArrayList<Move> friendlyKingMoves = getKingMoves(Board.isWhiteTurn);
+        ArrayList<Move> enemyPieceMoves = cullPawnMoves(getGeneralPieceMoves(!Board.isWhiteTurn));
+        ArrayList<Move> enemyKingMoves = getGeneralKingMoves(kingSpot, !Board.isWhiteTurn);
+        ArrayList<Move> enemyPawnAttackers = generateAttackingPawnMoveSpots(!Board.isWhiteTurn);
+
+        // Generate attacking move list
+        ArrayList<Move> attackers = new ArrayList<>();
+        attackers.addAll(enemyPieceMoves);
+        attackers.addAll(enemyPawnAttackers);
+        // Generate defender move list
+        ArrayList<Move> defenders = new ArrayList<>(friendlyPieceMoves);
+
+        // Check to see if our king is in check, this limits our moves to those that break the attackers or block line of sight
+        if (!spotIsNotCoveredByEnemyPiece(kingSpot, Board.isWhiteTurn, attackers)) {
+            // King is in check, must find all possible moves that would save him
+
+            // First check for moves that the king can take
+            for (int i = 0; i < 8; i++) {
+                if (numSquaresToEdge(kingSpot, i) >= 1) {
+                    int targetSpot = kingSpot + Director.directionCorrection(i);
+                    if (spots[targetSpot].spotPiece == null && spotIsNotCoveredByEnemyPiece(targetSpot, Board.isWhiteTurn, attackers))
+                        moves.add(new Move(kingSpot, targetSpot));
+                }
+            }
+            // Now all moves from the king are done
+            // Next we check for friendly moves that can kill attackers, them check again if the spot is covered
+
+            /*ArrayList<Move> potentialSacrifices = new ArrayList<>();
+            for (Move attackingMove : attackers) {
+                for (Move defendingMove: defenders) {
+                    if(defendingMove.endSpot == attackingMove.startSpot)
+                }
+            }*/
+            // This part is omitted, I hate chess and this bot will be dumb
+        }
+
+        // King is not in check, add in all possible legal moves
+        moves.addAll(friendlyKingMoves);
+        moves.addAll(friendlyPieceMoves);
+
+        TerminalControl.sendStatusMessage("Finished generating legal moves.");
+        return moves;
     }
 }

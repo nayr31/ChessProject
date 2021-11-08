@@ -92,30 +92,6 @@ public class Scorer {
     static int[] knightMultiplierBlack;
     static int[] kingEarlyMultiplierBlack;
     static int[] kingLateMultiplierBlack;
-    
-
-    // Returns the literal interpretation of a piece value without multipliers
-    // P = 100
-    // N = 320
-    // B = 330
-    // R = 500
-    // Q = 900
-    // K = 20000 
-    static int getPieceValue(Piece token){
-        if(token.pieceType == Piece.Type.Pawn)
-            return 100;
-        else if(token.pieceType == Piece.Type.Knight)
-            return 320;
-        else if(token.pieceType == Piece.Type.Bishop)
-            return 330;
-        else if(token.pieceType == Piece.Type.Rook)
-            return 500;
-        else if(token.pieceType == Piece.Type.Queen)
-            return 900;
-        else if(token.pieceType == Piece.Type.King)
-            return 20000;
-        return -1;
-    }
 
     // Required to run exactly once before using the score boards
     static void initiate(){
@@ -214,10 +190,30 @@ public class Scorer {
         return (!whiteHasQueen && !blackHasQueen) || ((!whiteHasQueen && numWhite < numBlack) || (!blackHasQueen && numBlack < numWhite));
     }
 
-    // Scores the board according to how White is doing
-    static int scoreBoard(Spot[] spots){
-        
+    // Scores the board
+    // The main evaluation function of the system
+    static int scoreBoard(){
+        Spot[] spots = Board.getSpots();
 
-        return 0;
+        int whiteCount = countColor(true);
+        int blackCount = countColor(false);
+
+        int evalVal = whiteCount - blackCount;
+        int perspective = Board.isWhiteTurn ? 1 : -1;
+
+        return evalVal * perspective;
+    }
+
+    static int countColor(boolean isWhite){
+        Spot[] spots = Board.getSpots();
+        int count = 0;
+        for (Spot spot : spots) {
+            Piece token = spot.spotPiece;
+            if (token != null) {
+                if (token.isWhite == isWhite)
+                    count += token.getPieceValue();
+            }
+        }
+        return count;
     }
 }

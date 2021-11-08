@@ -17,9 +17,13 @@ class Chess {
             String inputString = InputGetter.askForString("Input the FEN string now.\n" +
                     "WARNING: MO error checks on this string!");
             Board.popFromFEN(inputString);
+            TerminalControl.sendStatusMessage("Loaded FEN string from input.");
         }
 
+        // AI information
         AlMaroon.minimaxDepth = InputGetter.askForInt("How deep should the AI look?");
+        TerminalControl.sendStatusMessage("Al Maroon will search " + AlMaroon.minimaxDepth + " layers deep.");
+
     }
 
     public static void main(String[] args) {

@@ -6,22 +6,25 @@ public class Board {
     static int halfMoves, fullMoves;
     static boolean CanCastleWhiteKing, CanCastleWhiteQueen;
     static boolean CanCastleBlackKing, CanCastleBlackQueen;
-    // Keep track of which moves each side can take
-    static ArrayList<Move> whiteMoves = new ArrayList<>();
-    static ArrayList<Move> blackMoves = new ArrayList<>();
     // This is the last move record, a record of moves and pieces that were taken during that move
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
+
+    public static void changeTurns() {
+        Board.isWhiteTurn = !Board.isWhiteTurn;
+    }
 
     static class LastMoveRecord {
         private final Move move;
         private final Piece takenPiece;
         boolean isRoot;
+        boolean[] boolChanges;
 
-        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot) {
+        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges) {
             this.move = move;
             this.takenPiece = takenPiece;
             this.isRoot = isRoot;
+            this.boolChanges = boolChanges;
         }
 
         public String toString() {
@@ -174,8 +177,9 @@ public class Board {
                 if (passantSquare > 23) // Black piece
                     spaceDelta = -8;
                 // Set the piece's last move with a moveDelta of 2
-                spots[passantSquare + spaceDelta].spotPiece.lastMove =
-                        new Move(passantSquare - spaceDelta, passantSquare + spaceDelta);
+                spots[passantSquare + spaceDelta].spotPiece.changeLastMove(
+                        new Move(passantSquare - spaceDelta, passantSquare + spaceDelta));
+
             }
         }
 
@@ -188,6 +192,7 @@ public class Board {
         fullMoves = Integer.parseInt(varInput[5]);
     }
 
+    /*
     // Populates all moves that each player can take
     // Required per turn, since some may become invalid
     static void populateMoveLists() {
@@ -215,7 +220,7 @@ public class Board {
             blackMoves = MoveCoordinator.getGeneralPieceMoves(false);
             blackMoves.addAll(MoveCoordinator.getKingMoves(false));
         }
-    }
+    }*/
 
     // Prints debug information about number of squares to the edge of the board given a startSpot
     // [0] [4] [1]
@@ -247,37 +252,6 @@ public class Board {
         }
         return combinedVal;
     }
-
-    // Checks to see if an over-arching move is in one of the lists
-    static boolean moveIsInList(Move move, boolean isWhite) {
-        // The move in this context searches through the deepness of the move, checking its overall final position
-        ArrayList<Move> possibleMoves = new ArrayList<>();
-        for (Move listMove : isWhite ? whiteMoves : blackMoves) {
-            if (listMove.startSpot == move.startSpot)
-                possibleMoves.add(listMove);
-        }
-        // After searching through all of the start spots, check to see if the end spots of those embedded moves works
-        if (possibleMoves.size() != 0) {
-            for (Move possibleMove : possibleMoves) {
-                int endSpotInMove = endSpotInMove(possibleMove);
-                Move finalMove = new Move(possibleMove.startSpot, endSpotInMove);
-                boolean moveIsInList = finalMove.startSpot == move.startSpot && finalMove.endSpot == move.endSpot;
-                if (moveIsInList) return true;
-            }
-        }
-        return false;
-    }
-
-    // Recursively searches through a move and returns the final
-    static int endSpotInMove(Move move) {
-        // No more moves left in the series
-        if (move.embeddedMove == null) return move.endSpot;
-        // If it is not castling (ie, move series involves different pieces)
-        if (move.embeddedMove.isSamePiece)
-            return endSpotInMove(move.embeddedMove.embeddedMove);
-        return move.endSpot;
-    }
-
     //Standard java inherited method override
     static public String boardString() {
         StringBuilder out = new StringBuilder();
@@ -305,13 +279,20 @@ public class Board {
         return boardString();
     }
 
+    static void makeMove(Move move){
+        makeMove(move,true);
+    }
+
     // Preforms a move on the board and stores the information about what happened
     static void makeMove(Move move, boolean isRoot) {
         // Record if there was a piece that was taken with the move data
         Piece takenPiece = spots[move.endSpot].spotPiece;
-        lastMoveRecords.add(new LastMoveRecord(move, takenPiece, isRoot));
+        boolean[] boolChanges = determineBoolChanges(move);
+        lastMoveRecords.add(new LastMoveRecord(move, takenPiece, isRoot, boolChanges));
+        actOnBoolChanges(boolChanges);
         // Move the attacking piece into the end spot of the move
         Piece attackingPiece = spots[move.startSpot].spotPiece;
+        attackingPiece.lastMoves.add(move);
         spots[move.startSpot].spotPiece = null;
         spots[move.endSpot].spotPiece = attackingPiece;
         // Recall this for embedded moves
@@ -322,10 +303,14 @@ public class Board {
     static void unmakeMove() {
         // Remove the last move that occurred
         LastMoveRecord lastMoveRecord = lastMoveRecords.remove(lastMoveRecords.size() - 1);
-        // Reverse the movement of the attacking piece
+        // Reverse the movement of the attacking piece (set the starting point piece to the current
         spots[lastMoveRecord.move.startSpot].spotPiece = spots[lastMoveRecord.move.endSpot].spotPiece;
         // Replace the attacked piece
         spots[lastMoveRecord.move.endSpot].spotPiece = lastMoveRecord.takenPiece;
+        // Un-remember the last move
+        spots[lastMoveRecord.move.startSpot].spotPiece.forget();
+        // Make the necessary changes to the castling booleans
+        actOnBoolChanges(lastMoveRecord.boolChanges);
         // Recurse until we get to a root move
         if (!lastMoveRecord.isRoot) unmakeMove();
     }
@@ -345,6 +330,37 @@ public class Board {
         out += "Full moves: " + fullMoves + "\n";
 
         System.out.println(out);
+    }
+
+    // Determines which castling booleans should change with the suggested move
+    static boolean[] determineBoolChanges(Move move){ // WK, WQ, BK, BQ
+        Piece token = spots[move.startSpot].spotPiece;
+        boolean[] boolChanges = new boolean[]{false,false,false,false};
+        if(token.pieceType == Piece.Type.Rook){
+            if(token.isWhite){
+                if(move.startSpot == 0) // WK
+                    boolChanges[0] = true;
+                if(move.startSpot == 7) // WQ
+                    boolChanges[1] = true;
+            } else{
+                if(move.startSpot == 56) // BK
+                    boolChanges[2] = true;
+                if(move.startSpot == 63) // BQ
+                    boolChanges[3] = true;
+            }
+        }
+        return boolChanges;
+    }
+
+    static void actOnBoolChanges(boolean[] boolChanges){
+        if(boolChanges[0])
+            CanCastleWhiteKing = !CanCastleWhiteKing;
+        if(boolChanges[1])
+            CanCastleWhiteQueen = !CanCastleWhiteQueen;
+        if(boolChanges[2])
+            CanCastleBlackKing = !CanCastleBlackKing;
+        if(boolChanges[3])
+            CanCastleBlackQueen = !CanCastleBlackQueen;
     }
 
     public static Spot[] getSpots() {

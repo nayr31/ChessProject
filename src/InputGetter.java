@@ -1,10 +1,11 @@
+import java.util.ArrayList;
 import java.util.InputMismatchException;
-import java.util.Scanner;
 
 public class InputGetter {
 
     static Move askForMoveInput(String output){
         while(true){
+            ArrayList<Move> legalMoves = MoveCoordinator.generateLegalMoves();
             String input;
             String[] inputSplit;
             input = getInputFromTerminalControl();
@@ -15,7 +16,7 @@ public class InputGetter {
                 int startSpot = Board.convertInputToIndex(inputSplit[0]);
                 int endSpot = Board.convertInputToIndex(inputSplit[1]);
                 Move suggestedMove = new Move(startSpot, endSpot);
-                boolean moveIsInList = Board.moveIsInList(suggestedMove, Board.isWhiteTurn);
+                boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
                 if(!moveIsInList){
                     TerminalControl.sendStatusMessage("Move is not possible.");
                 } else{
