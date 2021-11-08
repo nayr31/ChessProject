@@ -24,6 +24,9 @@ class Chess {
         AlMaroon.minimaxDepth = InputGetter.askForInt("How deep should the AI look?");
         TerminalControl.sendStatusMessage("Al Maroon will search " + AlMaroon.minimaxDepth + " layers deep.");
 
+        while(Board.gameWillContinue){
+
+        }
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 public class Board {
+    public static boolean gameWillContinue = true;
     static Spot[] spots = new Spot[64];
     static boolean isWhiteTurn = true;
     static int halfMoves, fullMoves;
