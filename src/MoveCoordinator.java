@@ -481,7 +481,10 @@ public class MoveCoordinator {
         return hoopla;
     }
 
-    // For efficiency reasons, the order of operations and decision to skip certain check moves was implemented
+    //TODO Generating legal moves needs to be finished
+    // Currently it assumes that you want to generate all possible moves for color, then cull the bad ones to
+    //  return a complete list of legal moves.
+    // We can also instead make the move, check if it is bad, and add it if it wasn't
     public static ArrayList<Move> generateLegalMoves() {
         TerminalControl.sendStatusMessage("Generating legal moves...");
         ArrayList<Move> moves = new ArrayList<>();
