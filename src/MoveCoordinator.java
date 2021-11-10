@@ -310,16 +310,16 @@ public class MoveCoordinator {
         return isKingSide ? 7 : 5;
     }
 
-    static ArrayList<Move> getAttackingPiecesOnSpot(int spot, boolean isWhite, ArrayList<Move> enemyMoveList){
+    static ArrayList<Move> getAttackingPiecesOnSpot(int spot, boolean isWhite, ArrayList<Move> enemyMoveList) {
         ArrayList<Move> attackers = new ArrayList<>();
         // Gather all attacking moves on that spot
-        if(enemyMoveList == null) {
+        if (enemyMoveList == null) {
             enemyMoveList = cullPawnMoves(getGeneralPieceMoves(!isWhite));
             enemyMoveList.addAll(generateAttackingPawnMoveSpots(isWhite));
         }
 
-        for(Move move:enemyMoveList){
-            if(move.endSpot == spot)
+        for (Move move : enemyMoveList) {
+            if (move.endSpot == spot)
                 attackers.add(move);
         }
         return attackers;
@@ -516,29 +516,26 @@ public class MoveCoordinator {
                         moves.add(new Move(kingSpot, targetSpot));
                 }
             }
-            // If there are no king moves possible then check other possibilities
-            if(moves.size() == 0){
-                // Next we check for friendly moves that can kill attackers, them check again if the spot is covered
-                ArrayList<Move> potentialSacrifices = new ArrayList<>();
-                ArrayList<Move> attackersOnThisSpot = getAttackingPiecesOnSpot(kingSpot, Board.isWhiteTurn, attackers);
-                // If there are more than one attacking piece, then we can't take just one
-                if(attackersOnThisSpot.size() == 1){
-                    // Cross reference our defending pieces list to see which kill the opposing pieces
-                    for(Move enemyMove:attackersOnThisSpot){
-                        for (Move friendlyMove:defenders){
-                            if(friendlyMove.endSpot == enemyMove.startSpot)
-                                potentialSacrifices.add(friendlyMove);
-                        }
+            // Next we check for friendly moves that can kill attackers, them check again if the spot is covered
+            ArrayList<Move> potentialSacrifices = new ArrayList<>();
+            ArrayList<Move> attackersOnThisSpot = getAttackingPiecesOnSpot(kingSpot, Board.isWhiteTurn, attackers);
+            // If there are more than one attacking piece, then we can't take just one
+            if (attackersOnThisSpot.size() == 1) {
+                // Cross reference our defending pieces list to see which kill the opposing pieces
+                for (Move enemyMove : attackersOnThisSpot) {
+                    for (Move friendlyMove : defenders) {
+                        if (friendlyMove.endSpot == enemyMove.startSpot)
+                            potentialSacrifices.add(friendlyMove);
                     }
-                    // Sometimes there will be no defenders that are able to kill the attacker
-                    if(potentialSacrifices.size() != 0)
-                        return potentialSacrifices;
                 }
-                // This means that we need to see if we can block the
-
-                // Then we need to check for moves that would block attacker sightings
-                // This part is omitted, I hate chess and this bot will be dumb
+                // Sometimes there will be no defenders that are able to kill the attacker
+                if (potentialSacrifices.size() != 0)
+                    return potentialSacrifices;
             }
+            // This means that we need to see if we can block the
+
+            // Then we need to check for moves that would block attacker sightings
+            // This part is omitted, I hate chess and this bot will be dumb
 
             return moves;
         }
