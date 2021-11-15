@@ -45,6 +45,12 @@ public class MoveCoordinator {
         else return generateKingMoves(kingSpot, spots[kingSpot].spotPiece);
     }
 
+    static boolean kingIsInCheck(boolean isWhite){
+        Spot[] spots = Board.getSpots();
+        int kingSpot = getKingSpot(isWhite);
+        return !spotIsNotCoveredByEnemyPiece(kingSpot, isWhite);
+    }
+
     static int getKingSpot(boolean isWhite) {
         Spot[] spots = Board.getSpots();
         for (int startSpot = 0; startSpot < 64; startSpot++) {

@@ -1,6 +1,8 @@
 class Chess {
 
     TerminalControl terminalControl = new TerminalControl();
+    BoardWindow boardWindow = new BoardWindow();
+    AlMaroon al = new AlMaroon();
 
     Chess(){
         // Initialize program
@@ -9,7 +11,7 @@ class Chess {
 
         // Get the board configuration
         int inputNum = InputGetter.askForType("Please select an option:\n" +
-                "[0] - Normal Setup\n" +
+                "[0] - Normal configuration\n" +
                 "[1] - Input FEN string", 1);
         if(inputNum == 0)
             Board.popNormal();
@@ -24,8 +26,17 @@ class Chess {
         AlMaroon.minimaxDepth = InputGetter.askForInt("How deep should the AI look?");
         TerminalControl.sendStatusMessage("Al Maroon will search " + AlMaroon.minimaxDepth + " layers deep.");
 
+        // Looping gameplay
         while(Board.gameWillContinue){
-
+            boardWindow.updateTurnDisplay();
+            if (Board.isWhiteTurn){
+                boardWindow.showBoard();
+                //TODO Finish player input
+            }
+            else{
+                TerminalControl.sendStatusMessage("Al Maroon is thinking...");
+                al.think();
+            }
         }
     }
 

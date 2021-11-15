@@ -15,6 +15,14 @@ public class Board {
         Board.isWhiteTurn = !Board.isWhiteTurn;
     }
 
+    public static String PlayerInCheck() {
+        if(MoveCoordinator.kingIsInCheck(isWhiteTurn)){
+            return "Check";
+        }
+        //TODO Check stalemate, this should be an end-game event
+        return "Nope";
+    }
+
     static class LastMoveRecord {
         private final Move move;
         private final Piece takenPiece;
