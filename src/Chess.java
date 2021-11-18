@@ -22,6 +22,8 @@ class Chess {
             TerminalControl.sendStatusMessage("Loaded FEN string from input.");
         }
 
+        //TODO Add PvP
+
         // AI information
         AlMaroon.minimaxDepth = InputGetter.askForInt("How deep should the AI look?");
         TerminalControl.sendStatusMessage("Al Maroon will search " + AlMaroon.minimaxDepth + " layers deep.");
