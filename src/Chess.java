@@ -45,8 +45,8 @@ class Chess {
 
     private void debug(){
         String debugOptions = "help - This menu\n" +
-                "db - Display board\n" +
-                "im \"a1\" - Input move, without \"\n" +
+                "rb - Refresh board\n" +
+                "im \"a1-a2\" - Input move, without \"\n" +
                 "ap \"Ka1\" - Add a piece to the board (FEN style piece)\n" +
                 "exit - Close";
 
@@ -54,17 +54,37 @@ class Chess {
         while(true){
             input = InputGetter.askForString("Please input your debug command.\n" +
                     "\"help\" for options.");
-            switch (input) {
-                case "db" -> TerminalControl.refreshBoard();
+            String[] split = input.split(" ");
+            switch (split[0]) {
+                case "rb" -> TerminalControl.refreshBoard();
                 case "help" -> {
                     TerminalControl.sendCommandText(debugOptions);
                     TerminalControl.sendStatusMessage("Press enter to continue...");
                     InputGetter.ask();
                     TerminalControl.sendStatusMessage("");
                 }
-                /*
-                case "im" -> break;
-                case "ap" -> break;*/
+                case "im" -> InputGetter.debugMoveInput(split[1]);
+                case "ap" -> {
+                    if(split.length != 2){
+                        TerminalControl.sendStatusMessage("Incorrect length of args, make sure you only have 2.");
+                    } else{
+                        try{
+                            char fenChar = split[1].toCharArray()[0];
+                            String strLoc = split[1].substring(1);
+                            try{
+                                int location = Board.convertInputToIndex(strLoc);
+                                Board.placeNewPiece(fenChar, location);
+
+                            } catch(NotLocationException e){
+                                TerminalControl.sendStatusMessage(e.getMessage());
+                                System.out.println(e.getMessage());
+                            }
+                        } catch (ArrayIndexOutOfBoundsException e){
+                            TerminalControl.sendStatusMessage(e.getMessage());
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                }
                 case "exit" -> System.exit(1);
             }
         }

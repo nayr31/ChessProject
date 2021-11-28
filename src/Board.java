@@ -88,10 +88,7 @@ public class Board {
                 // If the character is not a digit, we set that spot to have a piece
                 if (!Character.isDigit(pieceChar)) {
                     //So set the spot on the board to that piece
-                    spots[spotLoc].spotPiece = new Piece(
-                            pieceChar,
-                            Character.isUpperCase(pieceChar)
-                    );
+                    placeNewPiece(pieceChar, spotLoc);
                     j++;
                 } else { // If it is a digit, we skip that many spaces horizontally
                     j += Integer.parseInt(String.valueOf(pieceChar));
@@ -180,7 +177,12 @@ public class Board {
                 // Get the space of the passant target
                 String passantString = varInput[3].substring(i, i + 2);
                 // Get the int interpretation of the target square
-                int passantSquare = convertInputToIndex(passantString);
+                int passantSquare = 0;
+                try {
+                    passantSquare = convertInputToIndex(passantString);
+                } catch (NotLocationException e) {
+                    e.printStackTrace(); // This should never happen
+                }
                 // Determine the spaceDelta, which offsets where the piece and its startSpot is
                 int spaceDelta = 8;
                 if (passantSquare > 23) // Black piece
@@ -199,6 +201,13 @@ public class Board {
         // --------- Step 5 ---------
         // Full moves
         fullMoves = Integer.parseInt(varInput[5]);
+    }
+
+    public static void placeNewPiece(char pieceChar, int spotLoc) {
+        spots[spotLoc].spotPiece = new Piece(
+                pieceChar,
+                Character.isUpperCase(pieceChar)
+        );
     }
 
     /*
@@ -247,17 +256,16 @@ public class Board {
     }
 
     // Converts board state input (such as "a5") to an index
-    static int convertInputToIndex(String input) {
+    static int convertInputToIndex(String input) throws NotLocationException {
         char[] arr = input.toCharArray();
         if (arr.length != 2)
-            return -1;
+            throw new NotLocationException("Incorrect length of string. Needs to be 2 long.");
         // arr[0] is the letter, convert it down from ascii
         int letterVal = arr[0] - 96 - 1;
         int numberVal = (arr[1] - 49) * 8;
         int combinedVal = letterVal + numberVal;
         if (combinedVal < 0 || combinedVal > 63) {
-            System.out.println("Something went wrong converting the value " + input);
-            return -1;
+            throw new NotLocationException("Something went wrong converting the value " + input);
         }
         return combinedVal;
     }
@@ -265,7 +273,7 @@ public class Board {
     static public String boardString() {
         StringBuilder out = new StringBuilder();
         String borderString = "----------------------------";
-        String letterString = "+  a   b   c   d   e   f   g   h\n";
+        String letterString = "+ a  b  c  d  e  f  g  h\n";
 
         out.append(borderString).append("\n");
 

@@ -13,16 +13,32 @@ public class InputGetter {
             if(inputSplit.length != 2 || inputSplit[0].length() != 2 || inputSplit[1].length() != 2){
                 TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\"");
             } else{
-                int startSpot = Board.convertInputToIndex(inputSplit[0]);
-                int endSpot = Board.convertInputToIndex(inputSplit[1]);
-                Move suggestedMove = new Move(startSpot, endSpot);
-                boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
-                if(!moveIsInList){
-                    TerminalControl.sendStatusMessage("Move is not possible.");
-                } else{
-                    return suggestedMove;
+                try{
+                    int startSpot = Board.convertInputToIndex(inputSplit[0]);
+                    int endSpot = Board.convertInputToIndex(inputSplit[1]);
+                    Move suggestedMove = new Move(startSpot, endSpot);
+                    boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
+                    if(!moveIsInList){
+                        TerminalControl.sendStatusMessage("Move is not possible.");
+                    } else{
+                        return suggestedMove;
+                    }
+                } catch(NotLocationException e){
+                    TerminalControl.sendStatusMessage("Something terrible happened trying to decipher the move!");
                 }
             }
+        }
+    }
+
+    static void debugMoveInput(String input){
+        String[] inputSplit = input.split("-");
+        try {
+            int startSpot = Board.convertInputToIndex(inputSplit[0]);
+            int endSpot = Board.convertInputToIndex(inputSplit[1]);
+            Move suggestedMove = new Move(startSpot, endSpot);
+            Board.makeMove(suggestedMove);
+        } catch (NotLocationException e){
+            TerminalControl.sendStatusMessage("Not a valid location.");
         }
     }
 
