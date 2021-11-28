@@ -5,10 +5,11 @@ class Chess {
     AlMaroon al = new AlMaroon();
 
     Chess(){
-        // Initialize program
-        Board.initiate();
-        Scorer.initiate();
+        //game();
+        debug();
+    }
 
+    private void game(){
         // Get the board configuration
         int inputNum = InputGetter.askForType("Please select an option:\n" +
                 "[0] - Normal configuration\n" +
@@ -31,7 +32,7 @@ class Chess {
         // Looping gameplay
         while(Board.gameWillContinue){
             boardWindow.updateTurnDisplay();
-            if (Board.isWhiteTurn){
+            if (Board.isWhiteTurn){ // Player turn
                 boardWindow.showBoard();
                 //TODO Finish player input
             }
@@ -42,7 +43,37 @@ class Chess {
         }
     }
 
+    private void debug(){
+        String debugOptions = "help - This menu\n" +
+                "db - Display board\n" +
+                "im \"a1\" - Input move, without \"\n" +
+                "ap \"Ka1\" - Add a piece to the board (FEN style piece)\n" +
+                "exit - Close";
+
+        String input = "";
+        while(true){
+            input = InputGetter.askForString("Please input your debug command.\n" +
+                    "\"help\" for options.");
+            switch (input) {
+                case "db" -> TerminalControl.refreshBoard();
+                case "help" -> {
+                    TerminalControl.sendCommandText(debugOptions);
+                    TerminalControl.sendStatusMessage("Press enter to continue...");
+                    InputGetter.ask();
+                    TerminalControl.sendStatusMessage("");
+                }
+                /*
+                case "im" -> break;
+                case "ap" -> break;*/
+                case "exit" -> System.exit(1);
+            }
+        }
+    }
+
     public static void main(String[] args) {
+        // Initialize program
+        Board.initiate();
+        Scorer.initiate();
         Chess c = new Chess();
     }
 }

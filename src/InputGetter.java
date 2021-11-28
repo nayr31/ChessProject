@@ -35,6 +35,10 @@ public class InputGetter {
         }
     }
 
+    static void ask(){
+        getInputFromTerminalControl();
+    }
+
     static int askForInt(String message){
         while(true){
             TerminalControl.sendCommandText(message);

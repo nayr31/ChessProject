@@ -375,6 +375,7 @@ public class Board {
     public static Spot[] getSpots() {
         return spots;
     }
+
 }
 
 /*

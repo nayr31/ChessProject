@@ -11,7 +11,7 @@ public class TerminalControl extends JFrame {
     static JTextArea commandsReceivedArea = new JTextArea(5, commonColumns);
     static JTextArea statusArea = new JTextArea(3, commonColumns);
     static Semaphore semaphore = new Semaphore(0);
-    BoardWindow boardWindow = new BoardWindow();
+    static BoardWindow boardWindow = new BoardWindow();
 
     TerminalControl(){
         FrameSetup.setup(this,"-Chess Program-", width, height, true, EXIT_ON_CLOSE);
@@ -61,8 +61,8 @@ public class TerminalControl extends JFrame {
         statusArea.setText(text);
     }
 
-    static void refreshBoard(Board board){
-        BoardWindow.boardArea.setText(board.toString());
+    static void refreshBoard(){
+        BoardWindow.boardArea.setText(Board.boardString());
     }
 
     void toggleBoard(){
