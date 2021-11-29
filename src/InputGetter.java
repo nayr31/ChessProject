@@ -36,7 +36,11 @@ public class InputGetter {
             int startSpot = Board.convertInputToIndex(inputSplit[0]);
             int endSpot = Board.convertInputToIndex(inputSplit[1]);
             Move suggestedMove = new Move(startSpot, endSpot);
-            Board.makeMove(suggestedMove);
+            Spot[] spots = Board.getSpots();
+            if(spots[startSpot].spotPiece != null)
+                Board.makeMove(suggestedMove);
+            else
+                TerminalControl.sendStatusMessage("Failed to move, no piece on start space.");
         } catch (NotLocationException e){
             TerminalControl.sendStatusMessage("Not a valid location.");
         }

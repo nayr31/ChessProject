@@ -1,7 +1,7 @@
 class Chess {
 
     TerminalControl terminalControl = new TerminalControl();
-    BoardWindow boardWindow = new BoardWindow();
+    //BoardWindow boardWindow = new BoardWindow();
     AlMaroon al = new AlMaroon();
 
     Chess(){
@@ -31,9 +31,9 @@ class Chess {
 
         // Looping gameplay
         while(Board.gameWillContinue){
-            boardWindow.updateTurnDisplay();
+            //TODO write in a "last move made" into the move area on the board window
             if (Board.isWhiteTurn){ // Player turn
-                boardWindow.showBoard();
+                TerminalControl.refreshBoard();
                 //TODO Finish player input
             }
             else{
@@ -52,6 +52,7 @@ class Chess {
 
         String input = "";
         while(true){
+            TerminalControl.refreshBoard();
             input = InputGetter.askForString("Please input your debug command.\n" +
                     "\"help\" for options.");
             String[] split = input.split(" ");
@@ -74,7 +75,6 @@ class Chess {
                             try{
                                 int location = Board.convertInputToIndex(strLoc);
                                 Board.placeNewPiece(fenChar, location);
-
                             } catch(NotLocationException e){
                                 TerminalControl.sendStatusMessage(e.getMessage());
                                 System.out.println(e.getMessage());
@@ -86,6 +86,7 @@ class Chess {
                     }
                 }
                 case "exit" -> System.exit(1);
+                default -> TerminalControl.sendStatusMessage("Unknown command, try again.");
             }
         }
     }

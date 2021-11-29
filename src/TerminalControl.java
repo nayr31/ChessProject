@@ -17,6 +17,7 @@ public class TerminalControl extends JFrame {
         FrameSetup.setup(this,"-Chess Program-", width, height, true, EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
         initField();
+        boardWindow.setAfter((int) (this.getWidth()*1.40));
     }
 
     // Creates and places the fields on the screen

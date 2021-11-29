@@ -3,10 +3,10 @@ import java.awt.*;
 
 class BoardWindow extends JFrame {
 
-    static final int width = 200;
-    static final int height = 230;
-    static JTextArea boardArea = new JTextArea(15, 15);
-    static JTextArea turnArea = new JTextArea(1, 15);
+    static final int width = 220;
+    static final int height = 270;
+    static JTextArea boardArea = new JTextArea(11, 20);
+    static JTextArea lastMoveArea = new JTextArea(1, 13);
 
     BoardWindow(){
         FrameSetup.setup(this,"-Board Window-", width, height, true, EXIT_ON_CLOSE);
@@ -14,12 +14,12 @@ class BoardWindow extends JFrame {
         initField();
     }
 
-    void showBoard(){
-        boardArea.setText(Board.boardString());
+    void setAfter(int parentWidth){
+        this.setLocation(this.getX() + parentWidth/2, this.getY());
     }
 
     void updateTurnDisplay(){
-        turnArea.setText(turnToString() + " to move.");
+        lastMoveArea.setText(turnToString() + " to move.");
     }
 
     String turnToString(){
@@ -28,8 +28,9 @@ class BoardWindow extends JFrame {
 
     void initField(){
         boardArea.setEditable(false);
+        boardArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         add(boardArea);
-        turnArea.setEditable(false);
-        add(turnArea);
+        lastMoveArea.setEditable(false);
+        add(lastMoveArea);
     }
 }

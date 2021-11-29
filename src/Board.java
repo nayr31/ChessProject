@@ -272,8 +272,8 @@ public class Board {
     //Standard java inherited method override
     static public String boardString() {
         StringBuilder out = new StringBuilder();
-        String borderString = "----------------------------";
-        String letterString = "+ a  b  c  d  e  f  g  h\n";
+        String borderString = "------------------";
+        String letterString = "+ a b c d e f g h\n";
 
         out.append(borderString).append("\n");
 
@@ -282,8 +282,11 @@ public class Board {
             //Add the number at which the row is stationed at
             out.append(8 - i); // Since it starts at 0 and works down, we need to inverse it
             //Each addition is "| x ", making the last one empty
-            for (int j = 7; j >= 0; j--)//spot on row
-                out.append("| ").append(spots[63 - j - i * 8]).append(" ");
+            for (int j = 7; j >= 0; j--){//spot on row
+                Spot sp = spots[63 - j - i * 8];
+                out.append("|").append(sp).append("");
+            }
+
             //So that when the row is over, we can close it and make a new line
             out.append("|\n");
         }
@@ -301,6 +304,7 @@ public class Board {
     }
 
     // Preforms a move on the board and stores the information about what happened
+    //TODO double check that this can (or needs to) handle null tokens
     static void makeMove(Move move, boolean isRoot) {
         // Record if there was a piece that was taken with the move data
         Piece takenPiece = spots[move.endSpot].spotPiece;
