@@ -4,7 +4,7 @@ class Chess {
     //BoardWindow boardWindow = new BoardWindow();
     AlMaroon al = new AlMaroon();
 
-    Chess(){
+    Chess(){ //TODO Add optional choice for game or debug
         //game();
         debug();
     }
@@ -18,7 +18,7 @@ class Chess {
             Board.popNormal();
         else if(inputNum == 1){
             String inputString = InputGetter.askForString("Input the FEN string now.\n" +
-                    "WARNING: MO error checks on this string!");
+                    "WARNING: NO error checks on this string!");
             Board.popFromFEN(inputString);
             TerminalControl.sendStatusMessage("Loaded FEN string from input.");
         }
@@ -32,9 +32,11 @@ class Chess {
         // Looping gameplay
         while(Board.gameWillContinue){
             //TODO write in a "last move made" into the move area on the board window
+            // To accomplish this, make sure both AI and player input return a move, then act on that move
+            //Move superMove = null;
             if (Board.isWhiteTurn){ // Player turn
                 TerminalControl.refreshBoard();
-                //TODO Finish player input
+                //TODO Finish player input, including options for FEN output at any turn
             }
             else{
                 TerminalControl.sendStatusMessage("Al Maroon is thinking...");
@@ -51,7 +53,7 @@ class Chess {
                 "exit - Close";
 
         String input = "";
-        while(true){
+        while(true){ //TODO Maybe make a class that handles console commands?
             TerminalControl.refreshBoard();
             input = InputGetter.askForString("Please input your debug command.\n" +
                     "\"help\" for options.");
