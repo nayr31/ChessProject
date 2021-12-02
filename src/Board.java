@@ -56,7 +56,10 @@ public class Board {
         popFromFEN("4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1");
     }
 
+    //TODO Add an "output to FEN" method
+
     //Populates the board from the FEN string
+    //TODO Enable error proofing for the FEN input
     static void popFromFEN(String inputString) {
         //Split the input into its separate functions:
         // [0] = Board spaces

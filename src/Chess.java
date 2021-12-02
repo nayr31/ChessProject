@@ -37,6 +37,7 @@ class Chess {
             if (Board.isWhiteTurn){ // Player turn
                 TerminalControl.refreshBoard();
                 //TODO Finish player input, including options for FEN output at any turn
+                Move playerMove = InputGetter.askForMoveInput("Please input your move in the format \"a1-b2\".");
             }
             else{
                 TerminalControl.sendStatusMessage("Al Maroon is thinking...");

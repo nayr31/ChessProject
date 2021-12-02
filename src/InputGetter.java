@@ -11,7 +11,8 @@ public class InputGetter {
             input = getInputFromTerminalControl();
             inputSplit = input.split("-");
             if(inputSplit.length != 2 || inputSplit[0].length() != 2 || inputSplit[1].length() != 2){
-                TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\"");
+                TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\".\n" +
+                        "These represent board spaces, with the start space being the first index.");
             } else{
                 try{
                     int startSpot = Board.convertInputToIndex(inputSplit[0]);
