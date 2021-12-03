@@ -16,8 +16,9 @@ public class AlMaroon {
         }
     }
 
-    void think(){
+    Move think(){
         SearchDTO bestResult = searchMinimax(minimaxDepth);
+        return bestResult.move;
     }
 
     SearchDTO searchMinimax(int depth){
@@ -26,7 +27,7 @@ public class AlMaroon {
 
         ArrayList<Move> moves = MoveCoordinator.generateLegalMoves();
         if(moves.isEmpty()){ // No possible moves for this player
-            if(Board.PlayerInCheck().equals("Check")) // Is in check, which you never want
+            if(Board.playerInCheck()) // Is in check, which you never want
                 return new SearchDTO(null, -9999999);
             return new SearchDTO(null, 0); // Or it is a stalemate
         }

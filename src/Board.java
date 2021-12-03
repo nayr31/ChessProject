@@ -2,6 +2,8 @@ import java.util.ArrayList;
 
 public class Board {
     public static boolean gameWillContinue = true;
+    public static String winner;
+    static boolean lastPlayerDidNotAct = false;
     static Spot[] spots = new Spot[64];
     static boolean isWhiteTurn = true;
     static int halfMoves, fullMoves;
@@ -15,12 +17,44 @@ public class Board {
         Board.isWhiteTurn = !Board.isWhiteTurn;
     }
 
-    public static String PlayerInCheck() {
-        if(MoveCoordinator.kingIsInCheck(isWhiteTurn)){
-            return "Check";
+    // Default stalemate of only two kings
+    public static boolean isStaleMate(){
+        boolean white = false;
+        boolean black = false;
+        for(int i=0;i< spots.length-1;i++){
+            if(spots[i].spotPiece != null){
+                if(spots[i].spotPiece.isWhite){
+                    if(white)
+                        return false;
+                    else
+                        white = true;
+                } else{
+                    if(black)
+                        return false;
+                    else
+                        black = true;
+                }
+            }
         }
-        //TODO Check stalemate, this should be an end-game event
-        return "Nope";
+        return true;
+    }
+
+    public static boolean colorIsCheckMate(boolean isWhite){
+        return colorIsCheckMate(isWhite, null);
+    }
+
+    public static boolean colorIsCheckMate(boolean isWhite, ArrayList<Move> moves){
+        if(moves == null)
+            moves = MoveCoordinator.generateLegalMoves();
+        return moves.size() == 0;
+    }
+
+    public static boolean playerInCheck(boolean isWhite){
+        return MoveCoordinator.kingIsInCheck(isWhite);
+    }
+
+    public static boolean playerInCheck(){
+        return MoveCoordinator.kingIsInCheck(isWhiteTurn);
     }
 
     static class LastMoveRecord {

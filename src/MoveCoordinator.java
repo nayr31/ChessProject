@@ -46,7 +46,6 @@ public class MoveCoordinator {
     }
 
     static boolean kingIsInCheck(boolean isWhite){
-        Spot[] spots = Board.getSpots();
         int kingSpot = getKingSpot(isWhite);
         return !spotIsNotCoveredByEnemyPiece(kingSpot, isWhite);
     }
@@ -487,23 +486,28 @@ public class MoveCoordinator {
         return hoopla;
     }
 
+    // Another method in case we want a specific color move list
+    public static ArrayList<Move> generateLegalMoves(){
+        return generateLegalMoves(Board.isWhiteTurn);
+    }
+
     //TODO Generating legal moves needs to be finished
     // Currently it assumes that you want to generate all possible moves for color, then cull the bad ones to
     //  return a complete list of legal moves.
     // We can also instead make the move, check if it is bad, and add it if it wasn't
-    public static ArrayList<Move> generateLegalMoves() {
+    public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
         ArrayList<Move> moves = new ArrayList<>();
         Spot[] spots = Board.getSpots();
 
-        int kingSpot = getKingSpot(Board.isWhiteTurn);
-        ArrayList<Move> friendlyPieceMoves = getGeneralPieceMoves(Board.isWhiteTurn);
+        int kingSpot = getKingSpot(isWhite);
+        ArrayList<Move> friendlyPieceMoves = getGeneralPieceMoves(isWhite);
         ArrayList<Move> friendlyNonPawnMoves = cullPawnMoves(friendlyPieceMoves);
-        ArrayList<Move> friendlyPawnAttackingMoves = generateAttackingPawnMoveSpots(Board.isWhiteTurn);
-        ArrayList<Move> friendlyKingMoves = getKingMoves(Board.isWhiteTurn);
-        ArrayList<Move> enemyPieceMoves = cullPawnMoves(getGeneralPieceMoves(!Board.isWhiteTurn));
-        ArrayList<Move> enemyKingMoves = getGeneralKingMoves(kingSpot, !Board.isWhiteTurn);
-        ArrayList<Move> enemyPawnAttackers = generateAttackingPawnMoveSpots(!Board.isWhiteTurn);
+        ArrayList<Move> friendlyPawnAttackingMoves = generateAttackingPawnMoveSpots(isWhite);
+        ArrayList<Move> friendlyKingMoves = getKingMoves(isWhite);
+        ArrayList<Move> enemyPieceMoves = cullPawnMoves(getGeneralPieceMoves(!isWhite));
+        ArrayList<Move> enemyKingMoves = getGeneralKingMoves(kingSpot, !isWhite);
+        ArrayList<Move> enemyPawnAttackers = generateAttackingPawnMoveSpots(!isWhite);
 
         // Generate attacking move list
         ArrayList<Move> attackers = new ArrayList<>();
@@ -514,20 +518,20 @@ public class MoveCoordinator {
         defenders.addAll(friendlyPawnAttackingMoves);
 
         // Check to see if our king is in check, this limits our moves to those that break the attackers or block line of sight
-        if (!spotIsNotCoveredByEnemyPiece(kingSpot, Board.isWhiteTurn, attackers)) {
+        if (!spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)) {
             // King is in check, must find all possible moves that would save him
 
             // First check for moves that the king can take
             for (int i = 0; i < 8; i++) {
                 if (numSquaresToEdge(kingSpot, i) >= 1) {
                     int targetSpot = kingSpot + Director.directionCorrection(i);
-                    if (spots[targetSpot].spotPiece == null && spotIsNotCoveredByEnemyPiece(targetSpot, Board.isWhiteTurn, attackers))
+                    if (spots[targetSpot].spotPiece == null && spotIsNotCoveredByEnemyPiece(targetSpot, isWhite, attackers))
                         moves.add(new Move(kingSpot, targetSpot));
                 }
             }
             // Next we check for friendly moves that can kill attackers, them check again if the spot is covered
             ArrayList<Move> potentialSacrifices = new ArrayList<>();
-            ArrayList<Move> attackersOnThisSpot = getAttackingPiecesOnSpot(kingSpot, Board.isWhiteTurn, attackers);
+            ArrayList<Move> attackersOnThisSpot = getAttackingPiecesOnSpot(kingSpot, isWhite, attackers);
             // If there are more than one attacking piece, then we can't take just one
             if (attackersOnThisSpot.size() == 1) {
                 // Cross reference our defending pieces list to see which kill the opposing pieces

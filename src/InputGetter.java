@@ -6,26 +6,40 @@ public class InputGetter {
     static Move askForMoveInput(String output){
         while(true){
             ArrayList<Move> legalMoves = MoveCoordinator.generateLegalMoves();
-            String input;
-            String[] inputSplit;
-            input = getInputFromTerminalControl();
-            inputSplit = input.split("-");
-            if(inputSplit.length != 2 || inputSplit[0].length() != 2 || inputSplit[1].length() != 2){
-                TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\".\n" +
-                        "These represent board spaces, with the start space being the first index.");
-            } else{
-                try{
-                    int startSpot = Board.convertInputToIndex(inputSplit[0]);
-                    int endSpot = Board.convertInputToIndex(inputSplit[1]);
-                    Move suggestedMove = new Move(startSpot, endSpot);
-                    boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
-                    if(!moveIsInList){
-                        TerminalControl.sendStatusMessage("Move is not possible.");
-                    } else{
-                        return suggestedMove;
+            if(legalMoves.size()==0){ // No legal moves, this means either stalemate or checkmate
+                // Stalemate check
+                if(Board.playerInCheck(true)){ // King was in check, and there were no legal moves out of it
+                    TerminalControl.sendCommandText("White is in checkmate! Black has won!");
+                    Board.gameWillContinue = false;
+                    Board.winner = "Black";
+                    return null;
+                } else{ // Player was not in check, but there were no legal moves
+                    TerminalControl.sendStatusMessage("It is a stalemate...");
+                    Board.gameWillContinue = false;
+                    Board.winner = "None";
+                }
+            }else{
+                String input;
+                String[] inputSplit;
+                input = getInputFromTerminalControl();
+                inputSplit = input.split("-");
+                if(inputSplit.length != 2 || inputSplit[0].length() != 2 || inputSplit[1].length() != 2){
+                    TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\".\n" +
+                            "These represent board spaces, with the start space being the first index.");
+                } else{
+                    try{
+                        int startSpot = Board.convertInputToIndex(inputSplit[0]);
+                        int endSpot = Board.convertInputToIndex(inputSplit[1]);
+                        Move suggestedMove = new Move(startSpot, endSpot);
+                        boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
+                        if(!moveIsInList){
+                            TerminalControl.sendStatusMessage("Move is not possible.");
+                        } else{
+                            return suggestedMove;
+                        }
+                    } catch(NotLocationException e){
+                        TerminalControl.sendStatusMessage("Something terrible happened trying to decipher the move!");
                     }
-                } catch(NotLocationException e){
-                    TerminalControl.sendStatusMessage("Something terrible happened trying to decipher the move!");
                 }
             }
         }

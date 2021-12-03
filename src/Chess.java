@@ -33,28 +33,35 @@ class Chess {
         while(Board.gameWillContinue){
             //TODO write in a "last move made" into the move area on the board window
             // To accomplish this, make sure both AI and player input return a move, then act on that move
-            //Move superMove = null;
+            // Also maybe add an overarching "gameHasFinished" check
+            boolean stalemate = Board.isStaleMate();
+            if(Board.lastPlayerDidNotAct){ // There was no move last turn, this is usually done by the AI
+
+            }
+            Move superMove = null;
             if (Board.isWhiteTurn){ // Player turn
                 TerminalControl.refreshBoard();
                 //TODO Finish player input, including options for FEN output at any turn
-                Move playerMove = InputGetter.askForMoveInput("Please input your move in the format \"a1-b2\".");
+                superMove = InputGetter.askForMoveInput("Please input your move in the format \"a1-b2\".");
             }
             else{
                 TerminalControl.sendStatusMessage("Al Maroon is thinking...");
                 al.think();
             }
+            // After getting the respective player's move, we act on it
+            // If it is null, that means that an end-game state was reached
+            if(superMove != null){
+                Board.makeMove(superMove);
+                Board.lastPlayerDidNotAct = false;
+            } else{
+                Board.lastPlayerDidNotAct = true;
+            }
         }
     }
 
     private void debug(){
-        String debugOptions = "help - This menu\n" +
-                "rb - Refresh board\n" +
-                "im \"a1-a2\" - Input move, without \"\n" +
-                "ap \"Ka1\" - Add a piece to the board (FEN style piece)\n" +
-                "exit - Close";
-
         String input = "";
-        while(true){ //TODO Maybe make a class that handles console commands?
+        while(true){
             TerminalControl.refreshBoard();
             input = InputGetter.askForString("Please input your debug command.\n" +
                     "\"help\" for options.");
@@ -62,10 +69,7 @@ class Chess {
             switch (split[0]) {
                 case "rb" -> TerminalControl.refreshBoard();
                 case "help" -> {
-                    TerminalControl.sendCommandText(debugOptions);
-                    TerminalControl.sendStatusMessage("Press enter to continue...");
-                    InputGetter.ask();
-                    TerminalControl.sendStatusMessage("");
+                    TerminalControl.toggleHelpWindow();
                 }
                 case "im" -> InputGetter.debugMoveInput(split[1]);
                 case "ap" -> {

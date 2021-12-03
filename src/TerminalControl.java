@@ -12,12 +12,14 @@ public class TerminalControl extends JFrame {
     static JTextArea statusArea = new JTextArea(3, commonColumns);
     static Semaphore semaphore = new Semaphore(0);
     static BoardWindow boardWindow = new BoardWindow();
+    static HelpWindow helpWindow = new HelpWindow();
 
     TerminalControl(){
         FrameSetup.setup(this,"-Chess Program-", width, height, true, EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
         initField();
         boardWindow.setAfter((int) (this.getWidth()*1.40));
+        helpWindow.setBefore((int) (this.getWidth()*1.60));
     }
 
     // Creates and places the fields on the screen
@@ -66,7 +68,35 @@ public class TerminalControl extends JFrame {
         BoardWindow.boardArea.setText(Board.boardString());
     }
 
-    void toggleBoard(){
+    static void toggleBoard(){
         boardWindow.setVisible(!boardWindow.isVisible());
+    }
+
+    static void toggleHelpWindow() { helpWindow.setVisible(!helpWindow.isVisible());}
+
+    private static class HelpWindow extends JFrame {
+        static final int width = 330;
+        static final int height = 300;
+        static JTextArea helpArea = new JTextArea(11, 26);
+        static String debugOptions = "rb - Refresh board\n" +
+                "im \"a1-a2\" - Input move, without \"\n" +
+                "ap \"Ka1\" - Add a piece to the board (FEN style piece)\n" +
+                "exit - Close";
+
+        HelpWindow(){
+            FrameSetup.setup(this, "Help Commands", width, height, false, EXIT_ON_CLOSE);
+            setLayout(new FlowLayout());
+            initField();
+        }
+
+        void setBefore(int parentWidth){
+            this.setLocation(this.getX() - parentWidth/2, this.getY());
+        }
+
+        private void initField(){
+            helpArea.setEditable(false);
+            helpArea.setText(debugOptions);
+            add(helpArea);
+        }
     }
 }
