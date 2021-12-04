@@ -373,6 +373,7 @@ public class MoveCoordinator {
     // Checks to see if a known enemy move is covers a spot with a move
     static boolean spotIsNotCoveredByEnemyPiece(int spot, boolean isWhite) {
         return spotIsNotCoveredByEnemyPiece(spot, isWhite, null);
+        //TODO improve performance of move generation, store the previous enemy list
     }
 
     // Returns the amount of squares that are in between a piece's spot and the edge of the board
@@ -544,11 +545,10 @@ public class MoveCoordinator {
                 // Sometimes there will be no defenders that are able to kill the attacker
                 if (potentialSacrifices.size() != 0)
                     return potentialSacrifices;
+                // TODO Don't return, add to overall list
             }
-            // This means that we need to see if we can block the
-
-            // Then we need to check for moves that would block attacker sightings
-            // This part is omitted, I hate chess and this bot will be dumb
+            // This means that we need to see if we can block the attacking pieces
+            // Checks on each square to see if there is an end spot in that list
 
             return moves;
         }

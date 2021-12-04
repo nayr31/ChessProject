@@ -84,7 +84,7 @@ public class TerminalControl extends JFrame {
                 "exit - Close";
 
         HelpWindow(){
-            FrameSetup.setup(this, "Help Commands", width, height, false, EXIT_ON_CLOSE);
+            FrameSetup.setup(this, "Help Commands", width, height, false, HIDE_ON_CLOSE);
             setLayout(new FlowLayout());
             initField();
         }

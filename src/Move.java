@@ -32,6 +32,7 @@ public class Move {
     int moveDelta(){
         return Math.abs(endSpot - startSpot);
     }
+    //TODO check total delta
 
     public String toString(){
         return "[" + startSpot + "-" + endSpot + "]";

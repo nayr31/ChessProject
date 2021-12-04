@@ -12,6 +12,23 @@ public class Board {
     // This is the last move record, a record of moves and pieces that were taken during that move
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
+    static class LastMoveRecord {
+        private final Move move;
+        private final Piece takenPiece;
+        boolean isRoot;
+        boolean[] boolChanges;
+
+        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges) {
+            this.move = move;
+            this.takenPiece = takenPiece;
+            this.isRoot = isRoot;
+            this.boolChanges = boolChanges;
+        }
+
+        public String toString() {
+            return move.toString();
+        }
+    }
 
     public static void changeTurns() {
         Board.isWhiteTurn = !Board.isWhiteTurn;
@@ -45,7 +62,7 @@ public class Board {
 
     public static boolean colorIsCheckMate(boolean isWhite, ArrayList<Move> moves){
         if(moves == null)
-            moves = MoveCoordinator.generateLegalMoves();
+            moves = MoveCoordinator.generateLegalMoves(isWhite);
         return moves.size() == 0;
     }
 
@@ -56,25 +73,6 @@ public class Board {
     public static boolean playerInCheck(){
         return MoveCoordinator.kingIsInCheck(isWhiteTurn);
     }
-
-    static class LastMoveRecord {
-        private final Move move;
-        private final Piece takenPiece;
-        boolean isRoot;
-        boolean[] boolChanges;
-
-        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges) {
-            this.move = move;
-            this.takenPiece = takenPiece;
-            this.isRoot = isRoot;
-            this.boolChanges = boolChanges;
-        }
-
-        public String toString() {
-            return move.toString();
-        }
-    }
-
     //Populates the board with empty objects
     static void initiate() {
         for (int i = 0; i < spots.length; i++)
@@ -91,6 +89,7 @@ public class Board {
     }
 
     //TODO Add an "output to FEN" method
+    // Include half/full counting, 50 full ends game
 
     //Populates the board from the FEN string
     //TODO Enable error proofing for the FEN input
@@ -341,7 +340,6 @@ public class Board {
     }
 
     // Preforms a move on the board and stores the information about what happened
-    //TODO double check that this can (or needs to) handle null tokens
     static void makeMove(Move move, boolean isRoot) {
         // Record if there was a piece that was taken with the move data
         Piece takenPiece = spots[move.endSpot].spotPiece;

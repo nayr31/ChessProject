@@ -193,8 +193,6 @@ public class Scorer {
     // Scores the board
     // The main evaluation function of the system
     static int scoreBoard(){
-        Spot[] spots = Board.getSpots();
-
         int whiteCount = countColor(true);
         int blackCount = countColor(false);
 

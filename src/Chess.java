@@ -56,6 +56,7 @@ class Chess {
             } else{
                 Board.lastPlayerDidNotAct = true;
             }
+            Board.changeTurns();
         }
     }
 
