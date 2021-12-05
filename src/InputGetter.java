@@ -3,43 +3,41 @@ import java.util.InputMismatchException;
 
 public class InputGetter {
 
-    static Move askForMoveInput(String output){
+    static Move playerTurnInput(){
+        // See if there are valid legal moves to take
+        ArrayList<Move> legalMoves = MoveCoordinator.generateLegalMoves();
+        if(legalMoves.size()==0){ // No legal moves, this means either stalemate or checkmate
+            return null;
+        } else{
+            return getMoveInput(legalMoves);
+        }
+    }
+
+    static Move getMoveInput(ArrayList<Move> legalMoves){
+        TerminalControl.sendStatusMessage("Type \"FEN\" to export the current board to a file.");
+        String input;
+        String[] inputSplit;
         while(true){
-            ArrayList<Move> legalMoves = MoveCoordinator.generateLegalMoves();
-            if(legalMoves.size()==0){ // No legal moves, this means either stalemate or checkmate
-                // Stalemate check
-                if(Board.playerInCheck(true)){ // King was in check, and there were no legal moves out of it
-                    TerminalControl.sendCommandText("White is in checkmate! Black has won!");
-                    Board.gameWillContinue = false;
-                    Board.winner = "Black";
-                    return null;
-                } else{ // Player was not in check, but there were no legal moves
-                    TerminalControl.sendStatusMessage("It is a stalemate...");
-                    Board.gameWillContinue = false;
-                    Board.winner = "None";
-                }
-            }else{
-                String input;
-                String[] inputSplit;
-                input = getInputFromTerminalControl();
-                inputSplit = input.split("-");
-                if(inputSplit.length != 2 || inputSplit[0].length() != 2 || inputSplit[1].length() != 2){
-                    TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\".\n" +
-                            "These represent board spaces, with the start space being the first index.");
-                } else{
-                    try{
-                        int startSpot = Board.convertInputToIndex(inputSplit[0]);
-                        int endSpot = Board.convertInputToIndex(inputSplit[1]);
-                        Move suggestedMove = new Move(startSpot, endSpot);
-                        boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
-                        if(!moveIsInList){
-                            TerminalControl.sendStatusMessage("Move is not possible.");
-                        } else{
-                            return suggestedMove;
-                        }
-                    } catch(NotLocationException e){
-                        TerminalControl.sendStatusMessage("Something terrible happened trying to decipher the move!");
+            input = getInputFromTerminalControl();
+            inputSplit = input.split("-");
+            if(input.equals("FEN")){
+                Board.outputToFile();
+            }else if(inputSplit.length != 2 || inputSplit[0].length() != 2 || inputSplit[1].length() != 2){
+                TerminalControl.sendStatusMessage("Wrong input format. Please use \"a1-a2\".\n" +
+                        "These represent board spaces, with the start space being the first index.");
+            } else{
+                try{
+                    int startSpot = Board.convertInputToIndex(inputSplit[0]);
+                    int endSpot = Board.convertInputToIndex(inputSplit[1]);
+                    Move suggestedMove = new Move(startSpot, endSpot);
+                    boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
+                    if(!moveIsInList){
+                        TerminalControl.sendStatusMessage("Move is not possible.");
+                    } else{
+                        return suggestedMove;
                     }
+                } catch(NotLocationException e){
+                    TerminalControl.sendStatusMessage("Something terrible happened trying to decipher the move!");
                 }
             }
         }
@@ -84,6 +82,20 @@ public class InputGetter {
             } catch (Exception e){
                 TerminalControl.sendStatusMessage("Unknown error occurred:\n" + e);
             }
+        }
+    }
+
+    static boolean askForYN(String message){
+        TerminalControl.sendCommandText(message);
+        String input;
+        while(true){
+            input = getInputFromTerminalControl();
+            if(input.equalsIgnoreCase("y"))
+                return true;
+            else if (input.equalsIgnoreCase("n"))
+                return false;
+            else
+                TerminalControl.sendStatusMessage("Input must be 'y' or 'n'.");
         }
     }
 

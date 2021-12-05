@@ -12,6 +12,12 @@ public class Board {
     // This is the last move record, a record of moves and pieces that were taken during that move
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
+
+    public static void outputToFile() {
+        String line = "";
+        Writer.printLine(line, "FEN.output.txt");
+    }
+
     static class LastMoveRecord {
         private final Move move;
         private final Piece takenPiece;
@@ -32,6 +38,9 @@ public class Board {
 
     public static void changeTurns() {
         Board.isWhiteTurn = !Board.isWhiteTurn;
+        halfMoves++;
+        if(halfMoves % 2 == 0)
+            fullMoves++;
     }
 
     // Default stalemate of only two kings
@@ -85,7 +94,8 @@ public class Board {
     }
 
     static void popTest() {
-        popFromFEN("4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1");
+        //popFromFEN("4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1");
+        popFromFEN("8/8/8/4p1K1/2k1P3/8/8/8 b - - 0 1");
     }
 
     //TODO Add an "output to FEN" method

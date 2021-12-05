@@ -8,6 +8,7 @@ public class TerminalControl extends JFrame {
     static final int height = 240;
     static final int commonColumns = 40;
     static String lastCommandInput = "Last input: ";
+    static JTextField commandInputArea = new JTextField(commonColumns);
     static JTextArea commandsReceivedArea = new JTextArea(5, commonColumns);
     static JTextArea statusArea = new JTextArea(3, commonColumns);
     static Semaphore semaphore = new Semaphore(0);
@@ -24,15 +25,14 @@ public class TerminalControl extends JFrame {
 
     // Creates and places the fields on the screen
     private void initField() {
-        JTextField field = new JTextField(commonColumns);
         JTextArea commandArea = new JTextArea(1, commonColumns);
 
         commandArea.setText(lastCommandInput);
         commandArea.setEditable(false);
         // Set the enter key to release the semaphore for user input
-        field.addActionListener(event ->{
-            String textFromField = field.getText();
-            field.setText("");
+        commandInputArea.addActionListener(event ->{
+            String textFromField = commandInputArea.getText();
+            commandInputArea.setText("");
             lastCommandInput = textFromField;
             commandArea.setText("Last input: " + lastCommandInput);
             semaphore.release();
@@ -41,7 +41,7 @@ public class TerminalControl extends JFrame {
         statusArea.setEditable(false);
 
         add(commandsReceivedArea);
-        add(field);
+        add(commandInputArea);
         add(commandArea);
         add(statusArea);
 
@@ -57,6 +57,8 @@ public class TerminalControl extends JFrame {
     static void sendCommandText(String text){
         commandsReceivedArea.setText(text);
     }
+
+    static void sendInputText(String text) { commandInputArea.setText(text);}
 
     static void clearCommandText(){commandsReceivedArea.setText("");}
 
