@@ -28,22 +28,22 @@ public class Board {
         int emptyNum = 0;
         StringBuilder builder = new StringBuilder();
         // row
-        for (int i = 0; i <=8; i++) {
+        for (int i = 0; i < 8; i++) {
             // col
-            for(int j=7;j>=0;j--){
-                Spot spot = spots[63-j-(i*8)];
+            for (int j = 7; j >= 0; j--) {
+                Spot spot = spots[63 - j - (i * 8)];
                 // If a piece is present, we add it to the list of stuff
-                if(spot.spotPiece != null){
+                if (spot.spotPiece != null) {
                     // If there were any empty numbers, then we add how many there were
-                    if(emptyNum != 0){
+                    if (emptyNum != 0) {
                         builder.append(emptyNum);
                         emptyNum = 0;
                     }
                     builder.append(spot.spotPiece.toString());
-                } else{
+                } else {
                     // Otherwise, it is an empty space that we count
                     emptyNum++;
-                    if(j==0) {// But if it is the last space, we
+                    if (j == 0) {// But if it is the last space, we
                         builder.append(emptyNum);
                         emptyNum = 0;
                     }
@@ -54,40 +54,61 @@ public class Board {
         }
 
         // Format them into the final string
-        for (int i=0;i<8;i++){
+        for (int i = 0; i < 8; i++) {
             String s = boardLines[i];
             line.append(s);
-            if(i!=7)
+            if (i != 7)
                 line.append("/");
         }
         line.append(" ");
 
         // [1] - Turn to move
-        if(isWhiteTurn)
+        if (isWhiteTurn)
             line.append("w ");
         else
             line.append("b ");
 
         // [2] - Castling rights
-        if(CanCastleWhiteKing)
+        if (CanCastleWhiteKing)
             line.append("K");
-        if(CanCastleWhiteQueen)
+        if (CanCastleWhiteQueen)
             line.append("Q");
-        if(CanCastleBlackKing)
+        if (CanCastleBlackKing)
             line.append("k");
-        if(CanCastleBlackQueen)
+        if (CanCastleBlackQueen)
             line.append("q");
 
-        if(CanCastleWhiteQueen || CanCastleBlackQueen || CanCastleWhiteKing || CanCastleBlackKing)
+        if (CanCastleWhiteQueen || CanCastleBlackQueen || CanCastleWhiteKing || CanCastleBlackKing)
             line.append(" ");
-        else{
+        else {
             line.append("- ");
         }
 
         // [3] = Space for en-passant
-        //TODO finish en-passant output
-        // This would involve looking at each pawn's last move delta
-        //spots[0].spotPiece.getLastMove().moveDelta();
+        builder = new StringBuilder();
+        for (int i = 0; i < 63; i++) {
+            Piece token = spots[i].spotPiece;
+            if(token != null){
+                if (token.pieceType == Piece.Type.Pawn) {
+                    Move lastMove = token.getLastMove();
+                    if (lastMove != null) {
+                        if (lastMove.moveDelta() == 2) {
+                            int passantSpot;
+                            if (token.isWhite)
+                                passantSpot = i - 8;
+                            else
+                                passantSpot = i + 8;
+                            builder.append(convertIndexToOutput(passantSpot));
+                        }
+                    }
+                }
+            }
+        }
+        if(builder.isEmpty()){
+            line.append("- ");
+        } else{
+            line.append(builder.toString());
+        }
 
         // [4] = Half move, how many moves each player has made together
         line.append(halfMoves).append(" ");
@@ -182,9 +203,6 @@ public class Board {
         //popFromFEN("4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1");
         popFromFEN("8/8/8/4p1K1/2k1P3/8/8/8 b - - 0 1");
     }
-
-    //TODO Add an "output to FEN" method
-    // Include half/full counting, 50 full ends game
 
     //Populates the board from the FEN string
     //TODO Enable error proofing for the FEN input
@@ -399,6 +417,27 @@ public class Board {
             throw new NotLocationException("Something went wrong converting the value " + input);
         }
         return combinedVal;
+    }
+
+    // Goes the other way around
+    static String convertIndexToOutput(int spot) {
+        int verticalSpot = -1;
+        // Run through every vertical row
+        for (int i = 0; i < 7; i++) {
+            // If the first number in the row above it is more than the spot, then it is in the row
+            if ((i + 1) * 8 > spot){
+                verticalSpot = i;
+                break;
+            }
+        }
+        if(verticalSpot == -1)
+            System.out.println("Something went wrong converting the vertical row.");
+        // Get the number of the horizontal position
+        int horizontalSpot = spot - verticalSpot * 8;
+        // Convert it to the ascii representation
+        horizontalSpot = 97 + horizontalSpot;
+        char letter = (char)horizontalSpot;
+        return String.valueOf(letter) + verticalSpot;
     }
 
     //Standard java inherited method override

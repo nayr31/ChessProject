@@ -114,7 +114,7 @@ public class MoveCoordinator {
     }
 
     // Just the knight, as it is special with the L pattern
-    static ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {//TODO Finish knight moves
+    static ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {
         ArrayList<Move> knightMoves = new ArrayList<>();
         for (int dir = 0; dir < 8; dir++) {
             int suggestedEndSpot = knightDirectionIsValid(startSpot, dir);

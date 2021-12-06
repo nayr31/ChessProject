@@ -63,6 +63,12 @@ class Chess {
     // "If the are no legal moves for a player, but they are not in check, it is a stalemate."
     // https://www.chessvariants.com/d.chess/matefaq.html
     private void checkForGameEnd() {
+        if(Board.fullMoves == 50){
+            TerminalControl.sendCommandText("Game has ended from turn limit.");
+            Board.gameWillContinue = false;
+            TerminalControl.sendStatusMessage("Printing FEN of board...");
+            Board.outputToFile();
+        }
         // If the last player did not act
         if (Board.lastPlayerDidNotAct) {
             // That means that they had no legal moves

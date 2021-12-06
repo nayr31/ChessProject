@@ -75,7 +75,7 @@ public class Director {
     //  [6]  [ ]  [ ]  [ ]  [3]
     //  [ ]  [5]  [ ]  [4]  [ ]
     // Requires special checks, since you can always go -9 or whatever, but it wont be caught by the board
-    static int directionConversionKnight(int dir) { //TODO Finish directional conversion/check for knight
+    static int directionConversionKnight(int dir) {
         switch (dir){
             case 0:
                 return 15;
