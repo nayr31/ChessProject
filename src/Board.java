@@ -14,8 +14,88 @@ public class Board {
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
 
     public static void outputToFile() {
-        String line = "";
-        Writer.printLine(line, "FEN.output.txt");
+        StringBuilder line = new StringBuilder();
+
+        // [0] = Board spaces
+        // [1] = Turn to move (b - black, w - white)
+        // [2] = Castling rights (up to 4 characters, K/Q are white, king side, queen side, - is empty)
+        // [3] = Space for en-passant
+        // [4] = Half move, how many moves each player has made together
+        // [5] = Full move, how many times black has moved
+
+        // [0] - Gather the FEN pieces and the empty spaces into lines
+        String[] boardLines = new String[8];
+        int emptyNum = 0;
+        StringBuilder builder = new StringBuilder();
+        // row
+        for (int i = 0; i <=8; i++) {
+            // col
+            for(int j=7;j>=0;j--){
+                Spot spot = spots[63-j-(i*8)];
+                // If a piece is present, we add it to the list of stuff
+                if(spot.spotPiece != null){
+                    // If there were any empty numbers, then we add how many there were
+                    if(emptyNum != 0){
+                        builder.append(emptyNum);
+                        emptyNum = 0;
+                    }
+                    builder.append(spot.spotPiece.toString());
+                } else{
+                    // Otherwise, it is an empty space that we count
+                    emptyNum++;
+                    if(j==0) {// But if it is the last space, we
+                        builder.append(emptyNum);
+                        emptyNum = 0;
+                    }
+                }
+            }
+            boardLines[i] = builder.toString();
+            builder = new StringBuilder();
+        }
+
+        // Format them into the final string
+        for (int i=0;i<8;i++){
+            String s = boardLines[i];
+            line.append(s);
+            if(i!=7)
+                line.append("/");
+        }
+        line.append(" ");
+
+        // [1] - Turn to move
+        if(isWhiteTurn)
+            line.append("w ");
+        else
+            line.append("b ");
+
+        // [2] - Castling rights
+        if(CanCastleWhiteKing)
+            line.append("K");
+        if(CanCastleWhiteQueen)
+            line.append("Q");
+        if(CanCastleBlackKing)
+            line.append("k");
+        if(CanCastleBlackQueen)
+            line.append("q");
+
+        if(CanCastleWhiteQueen || CanCastleBlackQueen || CanCastleWhiteKing || CanCastleBlackKing)
+            line.append(" ");
+        else{
+            line.append("- ");
+        }
+
+        // [3] = Space for en-passant
+        //TODO finish en-passant output
+        // This would involve looking at each pawn's last move delta
+        //spots[0].spotPiece.getLastMove().moveDelta();
+
+        // [4] = Half move, how many moves each player has made together
+        line.append(halfMoves).append(" ");
+
+        // [5] = Full move, how many times black has moved
+        line.append(fullMoves);
+
+        Writer.printLine(line.toString(), "FEN.output.txt");
     }
 
     static class LastMoveRecord {
@@ -39,23 +119,23 @@ public class Board {
     public static void changeTurns() {
         Board.isWhiteTurn = !Board.isWhiteTurn;
         halfMoves++;
-        if(halfMoves % 2 == 0)
+        if (halfMoves % 2 == 0)
             fullMoves++;
     }
 
     // Default stalemate of only two kings
-    public static boolean isStaleMate(){
+    public static boolean isStaleMate() {
         boolean white = false;
         boolean black = false;
-        for(int i=0;i< spots.length-1;i++){
-            if(spots[i].spotPiece != null){
-                if(spots[i].spotPiece.isWhite){
-                    if(white)
+        for (int i = 0; i < spots.length - 1; i++) {
+            if (spots[i].spotPiece != null) {
+                if (spots[i].spotPiece.isWhite) {
+                    if (white)
                         return false;
                     else
                         white = true;
-                } else{
-                    if(black)
+                } else {
+                    if (black)
                         return false;
                     else
                         black = true;
@@ -65,27 +145,28 @@ public class Board {
         return true;
     }
 
-    static Piece getTokenAtSpot(int spot){
+    static Piece getTokenAtSpot(int spot) {
         return spots[spot].spotPiece;
     }
 
-    public static boolean colorIsCheckMate(boolean isWhite){
+    public static boolean colorIsCheckMate(boolean isWhite) {
         return colorIsCheckMate(isWhite, null);
     }
 
-    public static boolean colorIsCheckMate(boolean isWhite, ArrayList<Move> moves){
-        if(moves == null)
+    public static boolean colorIsCheckMate(boolean isWhite, ArrayList<Move> moves) {
+        if (moves == null)
             moves = MoveCoordinator.generateLegalMoves(isWhite);
         return moves.size() == 0;
     }
 
-    public static boolean playerInCheck(boolean isWhite){
+    public static boolean playerInCheck(boolean isWhite) {
         return !MoveCoordinator.kingIsInCheck(isWhite);
     }
 
-    public static boolean playerInCheck(){
+    public static boolean playerInCheck() {
         return MoveCoordinator.kingIsInCheck(isWhiteTurn);
     }
+
     //Populates the board with empty objects
     static void initiate() {
         for (int i = 0; i < spots.length; i++)
@@ -319,6 +400,7 @@ public class Board {
         }
         return combinedVal;
     }
+
     //Standard java inherited method override
     static public String boardString() {
         StringBuilder out = new StringBuilder();
@@ -332,7 +414,7 @@ public class Board {
             //Add the number at which the row is stationed at
             out.append(8 - i); // Since it starts at 0 and works down, we need to inverse it
             //Each addition is "| x ", making the last one empty
-            for (int j = 7; j >= 0; j--){//spot on row
+            for (int j = 7; j >= 0; j--) {//spot on row
                 Spot sp = spots[63 - j - i * 8];
                 out.append("|").append(sp).append("");
             }
@@ -345,12 +427,12 @@ public class Board {
         return out.toString();
     }
 
-    public String toString(){
+    public String toString() {
         return boardString();
     }
 
-    static void makeMove(Move move){
-        makeMove(move,true);
+    static void makeMove(Move move) {
+        makeMove(move, true);
     }
 
     // Preforms a move on the board and stores the information about what happened
@@ -403,33 +485,33 @@ public class Board {
     }
 
     // Determines which castling booleans should change with the suggested move
-    static boolean[] determineBoolChanges(Move move){ // WK, WQ, BK, BQ
+    static boolean[] determineBoolChanges(Move move) { // WK, WQ, BK, BQ
         Piece token = spots[move.startSpot].spotPiece;
-        boolean[] boolChanges = new boolean[]{false,false,false,false};
-        if(token.pieceType == Piece.Type.Rook){
-            if(token.isWhite){
-                if(move.startSpot == 0) // WK
+        boolean[] boolChanges = new boolean[]{false, false, false, false};
+        if (token.pieceType == Piece.Type.Rook) {
+            if (token.isWhite) {
+                if (move.startSpot == 0) // WK
                     boolChanges[0] = true;
-                if(move.startSpot == 7) // WQ
+                if (move.startSpot == 7) // WQ
                     boolChanges[1] = true;
-            } else{
-                if(move.startSpot == 56) // BK
+            } else {
+                if (move.startSpot == 56) // BK
                     boolChanges[2] = true;
-                if(move.startSpot == 63) // BQ
+                if (move.startSpot == 63) // BQ
                     boolChanges[3] = true;
             }
         }
         return boolChanges;
     }
 
-    static void actOnBoolChanges(boolean[] boolChanges){
-        if(boolChanges[0])
+    static void actOnBoolChanges(boolean[] boolChanges) {
+        if (boolChanges[0])
             CanCastleWhiteKing = !CanCastleWhiteKing;
-        if(boolChanges[1])
+        if (boolChanges[1])
             CanCastleWhiteQueen = !CanCastleWhiteQueen;
-        if(boolChanges[2])
+        if (boolChanges[2])
             CanCastleBlackKing = !CanCastleBlackKing;
-        if(boolChanges[3])
+        if (boolChanges[3])
             CanCastleBlackQueen = !CanCastleBlackQueen;
     }
 
