@@ -76,11 +76,15 @@ public class TerminalControl extends JFrame {
 
     static void toggleHelpWindow() { helpWindow.setVisible(!helpWindow.isVisible());}
 
+    static void setBoardMessage(String message){
+        BoardWindow.setLastMoveArea(message);
+    }
+
     private static class HelpWindow extends JFrame {
         static final int width = 330;
         static final int height = 300;
         static JTextArea helpArea = new JTextArea(11, 26);
-        static String debugOptions = "rb - Refresh board\n" +
+        static String debugOptions = "gm - Generate moves\n" +
                 "im \"a1-a2\" - Input move, without \"\n" +
                 "ap \"Ka1\" - Add a piece to the board (FEN style piece)\n" +
                 "exit - Close";

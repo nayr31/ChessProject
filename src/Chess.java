@@ -1,13 +1,12 @@
 class Chess {
 
     TerminalControl terminalControl = new TerminalControl();
-    //BoardWindow boardWindow = new BoardWindow();
     AlMaroon al = new AlMaroon();
     static boolean isPVP = false;
 
     Chess() { //TODO Add optional choice for game or debug
-        //game();
-        debug();
+        game();
+        //debug();
     }
 
     private void game() {
@@ -47,6 +46,7 @@ class Chess {
             // If it is null, that means that an end-game state was reached
             if (superMove != null) {
                 Board.makeMove(superMove);
+                TerminalControl.refreshBoard();
                 Board.lastPlayerDidNotAct = false;
             } else {
                 Board.lastPlayerDidNotAct = true;
@@ -73,13 +73,19 @@ class Chess {
                 if (blackInCheck)
                     Board.winner = "Black";
                 else Board.winner = "White";
-            } else if (Board.isStaleMate()) { // Otherwise,
-                TerminalControl.sendCommandText("Game ended in flat Stalemate. Only kings remain.");
-                Board.winner = "Nobody.";
+                TerminalControl.sendCommandText(Board.winner + " has won.");
+            } else{
+                if (Board.isStaleMate()) // Otherwise, check for a flat stalemate
+                    TerminalControl.sendCommandText("Game ended in flat Stalemate.\n" +
+                            "Only kings remain.");
+                else
+                    TerminalControl.sendCommandText("Game ended in normal stalemate.\n" +
+                            "King is not in check, but no moves are possible");
             }
+
             Board.gameWillContinue = false;
-            TerminalControl.sendCommandText(Board.winner + " has won.");
             TerminalControl.sendStatusMessage("Printing FEN of board...");
+            Board.outputToFile();
         }
     }
 
@@ -101,7 +107,10 @@ class Chess {
                     "\"help\" for options.");
             String[] split = input.split(" ");
             switch (split[0]) {
-                case "rb" -> TerminalControl.refreshBoard();
+                case "gm" -> {
+                    MoveCoordinator.getGeneralPieceMoves(Board.isWhiteTurn);
+                    MoveCoordinator.getKingMoves(Board.isWhiteTurn);
+                }
                 case "help" -> {
                     TerminalControl.toggleHelpWindow();
                 }

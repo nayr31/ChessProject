@@ -65,6 +65,10 @@ public class Board {
         return true;
     }
 
+    static Piece getTokenAtSpot(int spot){
+        return spots[spot].spotPiece;
+    }
+
     public static boolean colorIsCheckMate(boolean isWhite){
         return colorIsCheckMate(isWhite, null);
     }
@@ -76,7 +80,7 @@ public class Board {
     }
 
     public static boolean playerInCheck(boolean isWhite){
-        return MoveCoordinator.kingIsInCheck(isWhite);
+        return !MoveCoordinator.kingIsInCheck(isWhite);
     }
 
     public static boolean playerInCheck(){

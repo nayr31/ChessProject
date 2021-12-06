@@ -45,7 +45,7 @@ public class MoveCoordinator {
         else return generateKingMoves(kingSpot, spots[kingSpot].spotPiece);
     }
 
-    static boolean kingIsInCheck(boolean isWhite){
+    static boolean kingIsInCheck(boolean isWhite) {
         int kingSpot = getKingSpot(isWhite);
         return !spotIsNotCoveredByEnemyPiece(kingSpot, isWhite);
     }
@@ -54,9 +54,9 @@ public class MoveCoordinator {
         Spot[] spots = Board.getSpots();
         for (int startSpot = 0; startSpot < 64; startSpot++) {
             Piece token = spots[startSpot].spotPiece;
-            if (token.pieceType == Piece.Type.King && token.isWhite == isWhite) {
-                return startSpot;
-            }
+            if (token != null)
+                if (token.pieceType == Piece.Type.King && token.isWhite == isWhite)
+                    return startSpot;
         }
         return -1;
     }
@@ -68,8 +68,14 @@ public class MoveCoordinator {
         // Set the start index to start at 0 for our bishop (only diagonals), so it ends at 4
         // And the end index to 8 if for our Rook, since it starts at 4
         // More on the reason behind this in the comments for @directionCorrection
-        int startIndex = token.pieceType == Piece.Type.Bishop ? 0 : 4;
-        int endIndex = token.pieceType == Piece.Type.Rook ? 4 : 8;
+        int startIndex, endIndex;
+        if (token.pieceType == Piece.Type.Queen) {
+            startIndex = 0;
+            endIndex = 8;
+        } else { // Still could be prettier
+            startIndex = token.pieceType == Piece.Type.Bishop ? 0 : 4;
+            endIndex = token.pieceType == Piece.Type.Rook ? 8 : 4;
+        }
 
         // For each direction
         for (int dir = startIndex; dir < endIndex; dir++) {
@@ -108,9 +114,14 @@ public class MoveCoordinator {
     }
 
     // Just the knight, as it is special with the L pattern
-    static ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {
+    static ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {//TODO Finish knight moves
         ArrayList<Move> knightMoves = new ArrayList<>();
-        //TODO Finish knight moves
+        for (int dir = 0; dir < 8; dir++) {
+            int suggestedEndSpot = knightDirectionIsValid(startSpot, dir);
+            if (suggestedEndSpot != -1){
+                knightMoves.add(new Move(startSpot, suggestedEndSpot));
+            }
+        }
         return knightMoves;
     }
 
@@ -120,15 +131,15 @@ public class MoveCoordinator {
         ArrayList<Move> pawnMoves = new ArrayList<>();
         // Determine how far the pawn can move depending on how far it has moved
         int spacesToMove = 1;
-        if (token.hasMoved)
+        if (!token.hasMoved)
             spacesToMove++;
 
         // For each of the possible move distances
         // This is just for moving forward, not taking pieces
         for (int i = 0; i < spacesToMove; i++) {
-            int targetSpot = startSpot + Director.pawnDirectionCorrection(token.isWhite) * i;
+            int targetSpot = startSpot + Director.pawnDirectionCorrection(token.isWhite) * (i+1);
             // Check to see if the target spot is within bounds
-            if (targetSpot < 63 & targetSpot > 0) {
+            if (targetSpot < 63 && targetSpot > 0) {
                 // Target spot is within bounds
                 Piece target = spots[targetSpot].spotPiece;
 
@@ -171,7 +182,7 @@ public class MoveCoordinator {
                     }
                 }
             }
-        }
+        }//TODO En-passant isn't working
 
         return pawnMoves;
     }
@@ -420,7 +431,7 @@ public class MoveCoordinator {
             }
             // Up-Left
             if (dir == 0) { // Go up a row
-                if (suggestedSpace >= rowKey + 7) break;
+                if (suggestedSpace == rowKey + 7) break;
             }
 
             // No conditions found to stop, increase the amount of moves possible and set the new rowkey
@@ -429,6 +440,75 @@ public class MoveCoordinator {
         }
 
         return numSpaces;
+    }
+
+    //  [ ]  [0]  [ ]  [1]  [ ]
+    //  [7]  [ ]  [ ]  [ ]  [2]
+    //  [ ]  [ ]  [X]  [ ]  [ ]
+    //  [6]  [ ]  [ ]  [ ]  [3]
+    //  [ ]  [5]  [ ]  [4]  [ ]
+    static int knightDirectionIsValid(int startSpot, int dir) {
+        int directionalOffset = Director.directionConversionKnight(dir);
+        int suggestedSpot = startSpot + directionalOffset;
+
+        // Going up above the board
+        if (dir == 0 || dir == 1 || dir == 2 || dir == 7) {
+            if (suggestedSpot > 63)
+                return -1;
+        }
+        // Going below the board
+        else if (dir == 3 || dir == 4 || dir == 5 || dir == 6) {
+            if (suggestedSpot < 0)
+                return -1;
+        }
+
+        // We are in bounds vertically, now we check horizontal positioning
+        // This would assume that each rowKey call is in bounds
+
+        // This value is the left-most spot in the current start square
+        //int rowKey = generateLocalRowKey(startSpot);
+        int keyRowKey;
+
+        // Depending on the direction, we check the suggested space compared to the rowKeys
+        if (dir == 7 || dir == 2 || dir == 0 || dir == 1) {
+
+            if (dir == 7 || dir == 2) {
+                keyRowKey = generateLocalRowKey(startSpot + 8);
+            } else {
+                keyRowKey = generateLocalRowKey(startSpot + 16);
+            }
+            // Going left, it would decrease. We want it to be equal to or higher than the next rowKey
+            if (dir == 7 || dir == 0) {
+                if (suggestedSpot < keyRowKey)
+                    return -1;
+            }
+            // Otherwise going right, we would get it to be more than 8 on the next next row
+            else {
+                if (suggestedSpot >= keyRowKey + 8)
+                    return -1;
+            }
+        } else if (dir == 3 || dir == 6 || dir == 4 || dir == 5) {
+            if (dir == 3 || dir  == 6)
+                keyRowKey = generateLocalRowKey(startSpot - 8);
+            else
+                keyRowKey = generateLocalRowKey(startSpot - 16);
+            // Going left,
+            if(dir == 5 || dir == 6){
+                if(suggestedSpot < keyRowKey)
+                    return -1;
+            }
+            // Going right
+            else { // dir == 4 || dir == 3
+                if(suggestedSpot == keyRowKey + 8)
+                    return -1;
+                if(dir == 3)
+                    if(suggestedSpot == keyRowKey + 9)
+                        return -1;
+            }
+        }
+
+        // Otherwise, the point is valid
+        return suggestedSpot;
     }
 
     // Finds the rowKey value of the spot that is given
@@ -488,15 +568,23 @@ public class MoveCoordinator {
     }
 
     // Another method in case we want a specific color move list
-    public static ArrayList<Move> generateLegalMoves(){
+    public static ArrayList<Move> generateLegalMoves() {
         return generateLegalMoves(Board.isWhiteTurn);
+    }
+
+    //TEMPORARY TESTING METHOD
+    //DO NOT USE
+    public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
+        ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
+        moves.addAll(getKingMoves(isWhite));
+        return moves;
     }
 
     //TODO Generating legal moves needs to be finished
     // Currently it assumes that you want to generate all possible moves for color, then cull the bad ones to
     //  return a complete list of legal moves.
     // We can also instead make the move, check if it is bad, and add it if it wasn't
-    public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
+    public static ArrayList<Move> generateLegalMovesOLD(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
         ArrayList<Move> moves = new ArrayList<>();
         Spot[] spots = Board.getSpots();

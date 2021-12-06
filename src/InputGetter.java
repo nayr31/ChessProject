@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 
@@ -14,6 +15,8 @@ public class InputGetter {
     }
 
     static Move getMoveInput(ArrayList<Move> legalMoves){
+        TerminalControl.sendCommandText("Enter your stat and end squares for your move:\n" +
+                "\"a1-a2\" would move the piece in a1 to a2. No not use quotes.");
         TerminalControl.sendStatusMessage("Type \"FEN\" to export the current board to a file.");
         String input;
         String[] inputSplit;
@@ -29,18 +32,28 @@ public class InputGetter {
                 try{
                     int startSpot = Board.convertInputToIndex(inputSplit[0]);
                     int endSpot = Board.convertInputToIndex(inputSplit[1]);
-                    Move suggestedMove = new Move(startSpot, endSpot);
-                    boolean moveIsInList = legalMoves.contains(suggestedMove);//MoveCoordinator.moveIsInList(suggestedMove, Board.isWhiteTurn, MoveCoordinator.get, Board.blackMoves);
-                    if(!moveIsInList){
+                    Move moveIsInList = moveIsInList(new Move(startSpot, endSpot), legalMoves);
+                    if(moveIsInList == null){
                         TerminalControl.sendStatusMessage("Move is not possible.");
                     } else{
-                        return suggestedMove;
+                        TerminalControl.sendStatusMessage("");
+                        TerminalControl.setBoardMessage(Board.getTokenAtSpot(moveIsInList.startSpot).toString() +
+                                " to " + inputSplit[1]);
+                        return moveIsInList;
                     }
                 } catch(NotLocationException e){
                     TerminalControl.sendStatusMessage("Something terrible happened trying to decipher the move!");
                 }
             }
         }
+    }
+
+    static Move moveIsInList(Move move, ArrayList<Move> moves){
+        for(Move refMove : moves){
+            if(move.startSpot == refMove.startSpot && move.endSpot == MoveCoordinator.endSpotInMove(refMove))
+                return refMove;
+        }
+        return null;
     }
 
     static void debugMoveInput(String input){

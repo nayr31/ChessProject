@@ -18,12 +18,8 @@ class BoardWindow extends JFrame {
         this.setLocation(this.getX() + parentWidth/2, this.getY());
     }
 
-    void updateTurnDisplay(){
-        lastMoveArea.setText(turnToString() + " to move.");
-    }
-
-    String turnToString(){
-        return Board.isWhiteTurn ? "White" : "Black";
+    static void setLastMoveArea(String text){
+        lastMoveArea.setText(text);
     }
 
     void initField(){

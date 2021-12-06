@@ -69,13 +69,31 @@ public class Director {
     }
 
     // Special conversion for the knight since he is a special boy
-    //  [ ]  [1]  [ ]  [2]  [ ]
-    //  [8]  [ ]  [ ]  [ ]  [3]
+    //  [ ]  [0]  [ ]  [1]  [ ]
+    //  [7]  [ ]  [ ]  [ ]  [2]
     //  [ ]  [ ]  [X]  [ ]  [ ]
-    //  [7]  [ ]  [ ]  [ ]  [4]
-    //  [ ]  [6]  [ ]  [5]  [ ]
+    //  [6]  [ ]  [ ]  [ ]  [3]
+    //  [ ]  [5]  [ ]  [4]  [ ]
     // Requires special checks, since you can always go -9 or whatever, but it wont be caught by the board
     static int directionConversionKnight(int dir) { //TODO Finish directional conversion/check for knight
+        switch (dir){
+            case 0:
+                return 15;
+            case 1:
+                return 17;
+            case 2:
+                return 10;
+            case 3:
+                return -6;
+            case 4:
+                return -15;
+            case 5:
+                return -17;
+            case 6:
+                return -10;
+            case 7:
+                return 6;
+        }
         return 0;
     }
 }

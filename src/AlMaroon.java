@@ -19,6 +19,7 @@ public class AlMaroon {
     Move think(){
         SearchDTO bestResult = searchAlphaBeta(minimaxDepth, -1, -1);
         //TODO Double check initial alpha beta values
+        // Also check why this always returns null
         return bestResult.move;
     }
 
