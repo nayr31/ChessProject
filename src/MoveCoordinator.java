@@ -160,6 +160,7 @@ public class MoveCoordinator {
             if (numSquaresToEdge(startSpot, targetDir[i]) >= 1) {
                 int targetSpot = startSpot + Director.directionCorrection(targetDir[i]); // Board wise value of the target direction
 
+                // Diagonal target in the pawns relative attack vectors
                 Piece target = spots[targetSpot].spotPiece;
 
                 // Add the move if it is an enemy piece
@@ -168,7 +169,7 @@ public class MoveCoordinator {
                         pawnMoves.add(new Move(startSpot, targetSpot));
                 } else { // If the space is empty, we may be able to passant
                     // We would normally check to see if there are enough spaces to the right or left, but diagonal ensures both
-                    // Make a new passantTargetSpot where the pawn would be
+                    // Make a new passantTargetSpot where the pawn would be that it needs to take
                     int passantTargetSpot = startSpot + Director.directionCorrection(passantDir[i]);
                     target = spots[passantTargetSpot].spotPiece;
                     if (target != null) { // There is a piece at the new targetSpot
@@ -177,12 +178,13 @@ public class MoveCoordinator {
                                 && !token.isFriendly(target)
                                 && target.getLastMove().moveDelta() == 16) {
                             // Add the move, but make the spot that dies the enemy pawn
-                            pawnMoves.add(new Move(startSpot, targetSpot, new Move(targetSpot, passantTargetSpot)));
+                            // So it would technically move into the pawn, then towards its final destination
+                            pawnMoves.add(new Move(startSpot, passantTargetSpot, new Move(passantTargetSpot, targetSpot)));
                         }
                     }
                 }
             }
-        }//TODO En-passant isn't working
+        }
 
         return pawnMoves;
     }

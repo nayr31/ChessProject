@@ -68,6 +68,7 @@ class Chess {
             Board.gameWillContinue = false;
             TerminalControl.sendStatusMessage("Printing FEN of board...");
             Board.outputToFile();
+            return;
         }
         // If the last player did not act
         if (Board.lastPlayerDidNotAct) {

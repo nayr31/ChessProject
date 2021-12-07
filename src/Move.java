@@ -4,7 +4,7 @@ public class Move {
     int startSpot; // Start position of the piece
     int endSpot; // End position of the piece
     EmbeddedMove embeddedMove = null;
-    static class EmbeddedMove{
+    class EmbeddedMove{
         Move embeddedMove; // This embedded move allows us to recursively call moves when making one
         public boolean isSamePiece = true;
 
@@ -30,6 +30,8 @@ public class Move {
     }
 
     int moveDelta(){
+        if(embeddedMove != null)
+            return Math.abs(embeddedMove.embeddedMove.endSpot - startSpot);
         return Math.abs(endSpot - startSpot);
     }
     //TODO check total delta
