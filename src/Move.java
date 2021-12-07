@@ -3,6 +3,7 @@ public class Move {
 
     int startSpot; // Start position of the piece
     int endSpot; // End position of the piece
+    int scoreOfMove;
     EmbeddedMove embeddedMove = null;
     class EmbeddedMove{
         Move embeddedMove; // This embedded move allows us to recursively call moves when making one
@@ -34,7 +35,6 @@ public class Move {
             return Math.abs(embeddedMove.embeddedMove.endSpot - startSpot);
         return Math.abs(endSpot - startSpot);
     }
-    //TODO check total delta
 
     public String toString(){
         return "[" + startSpot + "-" + endSpot + "]";

@@ -52,10 +52,9 @@ class Chess {
                 Board.lastPlayerDidNotAct = true;
             }
             // Always change turns at the end of moving
-            Board.changeTurns();
+            Board.changeTurns(true);
             // Then check if the game end
             checkForGameEnd();
-            // TODO test pvp and/or general move taking
         }
     }
 
@@ -63,7 +62,7 @@ class Chess {
     // "If the are no legal moves for a player, but they are not in check, it is a stalemate."
     // https://www.chessvariants.com/d.chess/matefaq.html
     private void checkForGameEnd() {
-        if(Board.fullMoves == 50){
+        if(Board.halfMoves == 100){
             TerminalControl.sendCommandText("Game has ended from turn limit.");
             Board.gameWillContinue = false;
             TerminalControl.sendStatusMessage("Printing FEN of board...");
@@ -85,9 +84,15 @@ class Chess {
                 if (Board.isStaleMate()) // Otherwise, check for a flat stalemate
                     TerminalControl.sendCommandText("Game ended in flat Stalemate.\n" +
                             "Only kings remain.");
-                else
-                    TerminalControl.sendCommandText("Game ended in normal stalemate.\n" +
-                            "King is not in check, but no moves are possible");
+                else{
+                    if(MoveCoordinator.generateLegalMoves().size() != 0){
+                        System.out.println("Something went wrong parsing the last move.");
+                        TerminalControl.sendCommandText("Something went wrong parsing the last move.");
+                    } else{
+                        TerminalControl.sendCommandText("Game ended in normal stalemate.\n" +
+                                "King is not in check, but no moves are possible");
+                    }
+                }
             }
 
             Board.gameWillContinue = false;

@@ -575,7 +575,7 @@ public class MoveCoordinator {
     }
 
     //TEMPORARY TESTING METHOD
-    //DO NOT USE
+    //DO NOT USE IN FINAL PRODUCT
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
         moves.addAll(getKingMoves(isWhite));

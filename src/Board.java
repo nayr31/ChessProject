@@ -137,11 +137,13 @@ public class Board {
         }
     }
 
-    public static void changeTurns() {
-        Board.isWhiteTurn = !Board.isWhiteTurn;
-        halfMoves++;
-        if (halfMoves % 2 == 0)
-            fullMoves++;
+    public static void changeTurns(boolean addTurnValue) {
+        Board.isWhiteTurn = !Board.isWhiteTurn; // Swap turn boolean
+        if(addTurnValue){
+            halfMoves++; // Half moves increment every turn
+            if (Board.isWhiteTurn) // Black has moved, now white turn, increment full move counter
+                fullMoves++;
+        }
     }
 
     // Default stalemate of only two kings

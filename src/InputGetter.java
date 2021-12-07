@@ -1,8 +1,8 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 
 public class InputGetter {
+    static final String fenString = "Type \"FEN\" to export the current board to a file.";
 
     static Move playerTurnInput(){
         // See if there are valid legal moves to take
@@ -17,7 +17,7 @@ public class InputGetter {
     static Move getMoveInput(ArrayList<Move> legalMoves){
         TerminalControl.sendCommandText("Enter your stat and end squares for your move:\n" +
                 "\"a1-a2\" would move the piece in a1 to a2. No not use quotes.");
-        TerminalControl.sendStatusMessage("Type \"FEN\" to export the current board to a file.");
+        TerminalControl.sendStatusMessage(fenString);
         String input;
         String[] inputSplit;
         while(true){
@@ -36,7 +36,7 @@ public class InputGetter {
                     if(moveIsInList == null){
                         TerminalControl.sendStatusMessage("Move is not possible.");
                     } else{
-                        TerminalControl.sendStatusMessage("");
+                        TerminalControl.sendStatusMessage(fenString);
                         TerminalControl.setBoardMessage(Board.getTokenAtSpot(moveIsInList.startSpot).toString() +
                                 " to " + inputSplit[1]);
                         return moveIsInList;
