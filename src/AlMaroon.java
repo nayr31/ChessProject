@@ -69,6 +69,7 @@ public class AlMaroon {
             }
 
             // Promoting a pawn is good
+            //TODO Finish pawn promotion ordering
 
             // Don't want moves where the move ends in a spot that is covered by a pawn
             if(MoveCoordinator.spotIsNotCoveredByEnemyPiece(move.endSpot, false, MoveCoordinator.generateAttackingPawnMoveSpots(false))){

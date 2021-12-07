@@ -127,6 +127,8 @@ public class MoveCoordinator {
 
     // Pawn only goes forward, direction depending on color
     static ArrayList<Move> generatePawnMoves(int startSpot, Piece token) {
+        //TODO Pawn promotion
+        // Pawns can become any special unit, but why not just be a queen all of the time?
         Spot[] spots = Board.getSpots();
         ArrayList<Move> pawnMoves = new ArrayList<>();
         // Determine how far the pawn can move depending on how far it has moved
@@ -259,7 +261,7 @@ public class MoveCoordinator {
                         kingMoves.add(move);
                 }
             }
-        }
+        } // TODO Test if castling works
 
         return kingMoves;
     }
