@@ -1,3 +1,5 @@
+import com.sun.source.tree.WhileLoopTree;
+
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 
@@ -127,6 +129,24 @@ public class InputGetter {
                 TerminalControl.sendStatusMessage("Number not valid, input only the numbers listed.");
             } catch (InputMismatchException e){
                 TerminalControl.sendStatusMessage("Not an int, try again.");
+            }
+        }
+    }
+
+    public static Piece.Type getPromotionType() {
+        TerminalControl.sendCommandText("Your pawn has promoted!\n" +
+                "Type in the character for your desired new piece.");
+        while(true){
+            String input = getInputFromTerminalControl();
+            if(input.length()==1){
+                Piece.Type type = Piece.charToType(input.charAt(0));
+                if(type == Piece.Type.None)
+                    TerminalControl.sendStatusMessage("Not a valid character, make sure to follow FEN notation.");
+                else
+                    return type;
+            } else{
+                TerminalControl.sendStatusMessage("Input too long, make sure you only type in one character.\n" +
+                        "'n' for knight, not case sensitive.");
             }
         }
     }

@@ -13,9 +13,46 @@ public class Board {
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
 
+    static class LastMoveRecord {
+        private final Move move;
+        private final Piece takenPiece;
+        boolean isRoot;
+        boolean[] boolChanges;
+        Promotion promotion;
+
+        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges, Piece oldPiece) {
+            this.move = move;
+            this.takenPiece = takenPiece;
+            this.isRoot = isRoot;
+            this.boolChanges = boolChanges;
+        }
+
+        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges) {
+            this.move = move;
+            this.takenPiece = takenPiece;
+            this.isRoot = isRoot;
+            this.boolChanges = boolChanges;
+        }
+
+        public String toString() {
+            return move.toString();
+        }
+
+        static class Promotion{
+            Move promotionMove;
+            Piece.Type oldType;
+            Piece.Type newType;
+
+            public Promotion(Move promotionMove, Piece.Type oldType, Piece.Type newType) {
+                this.promotionMove = promotionMove;
+                this.oldType = oldType;
+                this.newType = newType;
+            }
+        }
+    }
+
     public static void outputToFile() {
         StringBuilder line = new StringBuilder();
-
         // [0] = Board spaces
         // [1] = Turn to move (b - black, w - white)
         // [2] = Castling rights (up to 4 characters, K/Q are white, king side, queen side, - is empty)
@@ -119,23 +156,7 @@ public class Board {
         Writer.printLine(line.toString(), "FEN.output.txt");
     }
 
-    static class LastMoveRecord {
-        private final Move move;
-        private final Piece takenPiece;
-        boolean isRoot;
-        boolean[] boolChanges;
 
-        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges) {
-            this.move = move;
-            this.takenPiece = takenPiece;
-            this.isRoot = isRoot;
-            this.boolChanges = boolChanges;
-        }
-
-        public String toString() {
-            return move.toString();
-        }
-    }
 
     public static void changeTurns(boolean addTurnValue) {
         Board.isWhiteTurn = !Board.isWhiteTurn; // Swap turn boolean
@@ -480,11 +501,15 @@ public class Board {
     static void makeMove(Move move, boolean isRoot) {
         // Record if there was a piece that was taken with the move data
         Piece takenPiece = spots[move.endSpot].spotPiece;
-        boolean[] boolChanges = determineBoolChanges(move);
-        lastMoveRecords.add(new LastMoveRecord(move, takenPiece, isRoot, boolChanges));
-        actOnBoolChanges(boolChanges);
-        // Move the attacking piece into the end spot of the move
         Piece attackingPiece = spots[move.startSpot].spotPiece;
+        boolean[] boolChanges = determineBoolChanges(move);
+        LastMoveRecord lastMoveRecord = new LastMoveRecord(move, takenPiece, isRoot, boolChanges);
+        lastMoveRecord.promotion = promotionCheck(move, attackingPiece);
+        // Save and act
+        lastMoveRecords.add(lastMoveRecord);
+        actOnBoolChanges(boolChanges);
+        actOnPromotion(lastMoveRecord.promotion);
+        // Move the attacking piece into the end spot of the move
         attackingPiece.lastMoves.add(move);
         spots[move.startSpot].spotPiece = null;
         spots[move.endSpot].spotPiece = attackingPiece;
@@ -504,8 +529,55 @@ public class Board {
         spots[lastMoveRecord.move.startSpot].spotPiece.forget();
         // Make the necessary changes to the castling booleans
         actOnBoolChanges(lastMoveRecord.boolChanges);
+        undoPromotion(lastMoveRecord.promotion);
         // Recurse until we get to a root move
         if (!lastMoveRecord.isRoot) unmakeMove();
+    }
+
+    static LastMoveRecord.Promotion promotionCheck(Move move, Piece token){
+        if(doesPromote(move, token)){
+            Piece.Type newType;
+            if(Chess.isPVP || Board.isWhiteTurn){ // Player turns require
+                newType = InputGetter.getPromotionType();
+            } else{
+                newType = Piece.Type.Queen;
+            }
+            return new LastMoveRecord.Promotion(move, token.pieceType, newType);
+        }
+        return null;
+    }
+
+    // Promotes a unit
+    // Make sure this is called before it moves
+    private static void actOnPromotion(LastMoveRecord.Promotion promotion) {
+        spots[promotion.promotionMove.startSpot].spotPiece.pieceType = promotion.newType;
+    }
+
+    // Demotes a unit
+    // Make sure this is called after it moves back
+    private static void undoPromotion(LastMoveRecord.Promotion promotion){
+        spots[promotion.promotionMove.startSpot].spotPiece.pieceType = promotion.oldType;
+    }
+
+    static boolean doesPromote(Move move, Piece token){
+        return token.pieceType == Piece.Type.Pawn
+                && intArrayContainsValue(promotionSpots(token.isWhite), move.endSpot);
+    }
+
+    static boolean intArrayContainsValue(int[] array, int value){
+        for(int i: array){
+            if(i == value)
+                return true;
+        }
+        return false;
+    }
+
+    static int[] promotionSpots(boolean isWhite){
+        if(isWhite){
+            return new int[] {56, 57, 58, 59, 60, 61, 62, 63};
+        } else{
+            return new int[] {0, 1, 2, 3, 4, 5, 6, 7};
+        }
     }
 
     static void showDebugValues() {

@@ -58,6 +58,8 @@ class Chess {
         }
     }
 
+    //TODO Test pawn promotion
+
     // These rules were derived from this website detailing stalemates
     // "If the are no legal moves for a player, but they are not in check, it is a stalemate."
     // https://www.chessvariants.com/d.chess/matefaq.html

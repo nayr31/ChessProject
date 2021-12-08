@@ -11,7 +11,7 @@ public class Piece {
         None
     };
 
-    Type pieceType = Type.None;
+    Type pieceType;
     boolean isWhite;
     boolean hasMoved = false;
     ArrayList<Move> lastMoves = new ArrayList<>();
@@ -19,36 +19,27 @@ public class Piece {
 
     Piece(char c, boolean isWhite){
         name = isWhite ? "White " : "Black ";
+        pieceType = charToType(c);
+        this.isWhite = isWhite;
+    }
+
+    static Type charToType(char c){
         switch (Character.toLowerCase(c)) {
             case 'r':
-                pieceType = Type.Rook;
-                name += "Rook";
-                break;
+                return Type.Rook;
             case 'n':
-                pieceType = Type.Knight;
-                name += "Knight";
-                break;
+                return Type.Knight;
             case 'p':
-                pieceType = Type.Pawn;
-                name += "Pawn";
-                break;
+                return Type.Pawn;
             case 'b':
-                pieceType = Type.Bishop;
-                name += "Bishop";
-                break;
+                return Type.Bishop;
             case 'q':
-                pieceType = Type.Queen;
-                name += "Queen";
-                break;
+                return Type.Queen;
             case 'k':
-                pieceType = Type.King;
-                name += "King";
-                break;
+                return Type.King;
             default:
-                System.out.println("Failed to convert FEM character into piece: " + c);
-                break;
+                return Type.None;
         }
-        this.isWhite = isWhite;
     }
     
     /// Constructor for piece
