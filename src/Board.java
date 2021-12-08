@@ -4,6 +4,7 @@ public class Board {
     public static boolean gameWillContinue = true;
     public static String winner;
     static boolean lastPlayerDidNotAct = false;
+    static boolean aiIsActing = false;
     static Spot[] spots = new Spot[64];
     static boolean isWhiteTurn = true;
     static int halfMoves, fullMoves;
@@ -19,13 +20,6 @@ public class Board {
         boolean isRoot;
         boolean[] boolChanges;
         Promotion promotion;
-
-        public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges, Piece oldPiece) {
-            this.move = move;
-            this.takenPiece = takenPiece;
-            this.isRoot = isRoot;
-            this.boolChanges = boolChanges;
-        }
 
         public LastMoveRecord(Move move, Piece takenPiece, boolean isRoot, boolean[] boolChanges) {
             this.move = move;
@@ -537,9 +531,11 @@ public class Board {
     static LastMoveRecord.Promotion promotionCheck(Move move, Piece token){
         if(doesPromote(move, token)){
             Piece.Type newType;
-            if(Chess.isPVP || Board.isWhiteTurn){ // Player turns require
+            if((Chess.isPVP || Board.isWhiteTurn) && !aiIsActing){ // Player turns
+                // Get their desired piece type
                 newType = InputGetter.getPromotionType();
-            } else{
+            } else{ // If the ai is acting on behalf of the player, or its hte ai turn
+                // Assume that it is a queen
                 newType = Piece.Type.Queen;
             }
             return new LastMoveRecord.Promotion(move, token.pieceType, newType);
