@@ -133,8 +133,9 @@ public class InputGetter {
         }
     }
 
-    public static Piece.Type getPromotionType() {
-        TerminalControl.sendCommandText("Your pawn has promoted!\n" +
+    public static Piece.Type getPromotionType(int endSpot) {
+        System.out.println("Move end " + endSpot);
+        TerminalControl.sendCommandText("Your pawn will promote on " + Board.convertIndexToOutput(endSpot) + "!\n" +
                 "Type in the character for your desired new piece.");
         while(true){
             String input = getInputFromTerminalControl();

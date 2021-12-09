@@ -8,8 +8,8 @@ public class Board {
     static Spot[] spots = new Spot[64];
     static boolean isWhiteTurn = true;
     static int halfMoves, fullMoves;
-    static boolean CanCastleWhiteKing, CanCastleWhiteQueen;
-    static boolean CanCastleBlackKing, CanCastleBlackQueen;
+    static boolean CanCastleWhiteKing = true, CanCastleWhiteQueen = true;
+    static boolean CanCastleBlackKing = true, CanCastleBlackQueen = true;
     // This is the last move record, a record of moves and pieces that were taken during that move
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
@@ -437,23 +437,35 @@ public class Board {
     }
 
     // Goes the other way around
-    static String convertIndexToOutput(int spot) {
-        int verticalSpot = -1;
-        // Run through every vertical row
-        for (int i = 0; i < 7; i++) {
-            // If the first number in the row above it is more than the spot, then it is in the row
-            if ((i + 1) * 8 > spot){
-                verticalSpot = i;
-                break;
-            }
-        }
-        if(verticalSpot == -1)
-            System.out.println("Something went wrong converting the vertical row.");
-        // Get the number of the horizontal position
-        int horizontalSpot = spot - verticalSpot * 8;
-        // Convert it to the ascii representation
-        horizontalSpot = 97 + horizontalSpot;
-        char letter = (char)horizontalSpot;
+    //static String convertIndexToOutput(int spot) {
+    //    int verticalSpot = -1;
+    //    // Run through every vertical row
+    //    for (int i = 0; i < 7; i++) {
+    //        // If the first number in the row above it is more than the spot, then it is in the row
+    //        if ((i + 1) * 8 > spot){
+    //            verticalSpot = i;
+    //            break;
+    //        }
+    //    }
+    //    if(verticalSpot == -1)
+    //        System.out.println("Something went wrong converting the vertical row.");
+    //    // Get the number of the horizontal position
+    //    int horizontalSpot = spot - verticalSpot * 8;
+    //    // Convert it to the ascii representation
+    //    horizontalSpot = 97 + horizontalSpot;
+    //    char letter = (char)horizontalSpot;
+    //    verticalSpot++; //
+    //    System.out.println(String.valueOf(letter) + verticalSpot);
+    //    return String.valueOf(letter) + verticalSpot;
+    //}
+
+    // Convert a spot on the board into a representation of a letter and number
+    static String convertIndexToOutput(int spot){
+        int verticalSpot = Math.floorDiv(spot, 8); // spot / 8 (9 / 8 = 1.125 = 1)
+        verticalSpot++; // Convert it to our 1-8 scale instead of 0-7
+        int horizontalSpot = Math.floorMod(spot, 8);
+        horizontalSpot += 97; // Convert to ascii
+        char letter = (char)horizontalSpot; // Convert it to a character
         return String.valueOf(letter) + verticalSpot;
     }
 
@@ -496,7 +508,7 @@ public class Board {
         // Record if there was a piece that was taken with the move data
         Piece takenPiece = spots[move.endSpot].spotPiece;
         Piece attackingPiece = spots[move.startSpot].spotPiece;
-        boolean[] boolChanges = determineBoolChanges(move);
+        boolean[] boolChanges = determineCastlingBoolChanges(move);
         LastMoveRecord lastMoveRecord = new LastMoveRecord(move, takenPiece, isRoot, boolChanges);
         lastMoveRecord.promotion = promotionCheck(move, attackingPiece);
         // Save and act
@@ -533,7 +545,7 @@ public class Board {
             Piece.Type newType;
             if((Chess.isPVP || Board.isWhiteTurn) && !aiIsActing){ // Player turns
                 // Get their desired piece type
-                newType = InputGetter.getPromotionType();
+                newType = InputGetter.getPromotionType(move.endSpot);
             } else{ // If the ai is acting on behalf of the player, or its hte ai turn
                 // Assume that it is a queen
                 newType = Piece.Type.Queen;
@@ -546,13 +558,15 @@ public class Board {
     // Promotes a unit
     // Make sure this is called before it moves
     private static void actOnPromotion(LastMoveRecord.Promotion promotion) {
-        spots[promotion.promotionMove.startSpot].spotPiece.pieceType = promotion.newType;
+        if(promotion != null)
+            spots[promotion.promotionMove.startSpot].spotPiece.pieceType = promotion.newType;
     }
 
     // Demotes a unit
     // Make sure this is called after it moves back
     private static void undoPromotion(LastMoveRecord.Promotion promotion){
-        spots[promotion.promotionMove.startSpot].spotPiece.pieceType = promotion.oldType;
+        if(promotion != null)
+            spots[promotion.promotionMove.startSpot].spotPiece.pieceType = promotion.oldType;
     }
 
     static boolean doesPromote(Move move, Piece token){
@@ -594,9 +608,9 @@ public class Board {
     }
 
     // Determines which castling booleans should change with the suggested move
-    static boolean[] determineBoolChanges(Move move) { // WK, WQ, BK, BQ
-        Piece token = spots[move.startSpot].spotPiece;
+    static boolean[] determineCastlingBoolChanges(Move move) { // WK, WQ, BK, BQ
         boolean[] boolChanges = new boolean[]{false, false, false, false};
+        Piece token = spots[move.startSpot].spotPiece;
         if (token.pieceType == Piece.Type.Rook) {
             if (token.isWhite) {
                 if (move.startSpot == 0) // WK

@@ -5,8 +5,8 @@ class Chess {
     static boolean isPVP = false;
 
     Chess() { //TODO Add optional choice for game or debug
-        game();
-        //debug();
+        //game();
+        debug();
     }
 
     private void game() {
@@ -58,7 +58,7 @@ class Chess {
         }
     }
 
-    //TODO Test pawn promotion
+    //TODO Test if castling works
 
     // These rules were derived from this website detailing stalemates
     // "If the are no legal moves for a player, but they are not in check, it is a stalemate."
@@ -121,13 +121,8 @@ class Chess {
                     "\"help\" for options.");
             String[] split = input.split(" ");
             switch (split[0]) {
-                case "gm" -> {
-                    MoveCoordinator.getGeneralPieceMoves(Board.isWhiteTurn);
-                    MoveCoordinator.getKingMoves(Board.isWhiteTurn);
-                }
-                case "help" -> {
-                    TerminalControl.toggleHelpWindow();
-                }
+                case "gm" -> MoveCoordinator.generateLegalMoves();
+                case "help" -> TerminalControl.toggleHelpWindow();
                 case "im" -> InputGetter.debugMoveInput(split[1]);
                 case "ap" -> {
                     if (split.length != 2) {
@@ -147,6 +142,16 @@ class Chess {
                             TerminalControl.sendStatusMessage(e.getMessage());
                             System.out.println(e.getMessage());
                         }
+                    }
+                }
+                case "cl" -> Board.spots = new Spot[63];
+                case "um" -> Board.unmakeMove();
+                case "tt" -> {
+                    Move move = takePlayerTurn();
+                    if(move != null)
+                        Board.makeMove(move);
+                    else{
+                        System.out.println("Move could not be made.");
                     }
                 }
                 case "exit" -> System.exit(1);

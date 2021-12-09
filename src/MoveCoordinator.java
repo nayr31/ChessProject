@@ -249,17 +249,17 @@ public class MoveCoordinator {
             if (spotIsNotCoveredByEnemyPiece(startSpot, token.isWhite)) { // (3)
                 // (1,2,4,6)
                 if (token.isWhite ? Board.CanCastleWhiteQueen : Board.CanCastleBlackQueen) {
-                    Move move = makeCastle(token, startSpot, false);
+                    Move move = makeCastle(token.isWhite, startSpot, false);
                     if (move != null)
                         kingMoves.add(move);
                 }
                 if (token.isWhite ? Board.CanCastleWhiteKing : Board.CanCastleBlackKing) {
-                    Move move = makeCastle(token, startSpot, true);
+                    Move move = makeCastle(token.isWhite, startSpot, true);
                     if (move != null)
                         kingMoves.add(move);
                 }
             }
-        } // TODO Test if castling works
+        }
 
         return kingMoves;
     }
@@ -280,12 +280,19 @@ public class MoveCoordinator {
         return kingMoves;
     }
 
-    // Checks for blocking attack spaces while returning a valid move if one ecists
-    static Move makeCastle(Piece token, int startSpot, boolean isKingSide) {
-        int dir = kingCastleDirectionCorrection(token.isWhite);
-        if (castleSpacesAreFree(startSpot, dir, token.isWhite)) {
+    // Checks for blocking attack spaces while returning a valid move if one exists
+    static Move makeCastle(boolean isWhite, int startSpot, boolean isKingSide) {
+        // Get the direction needed for each side - left is 7 right is 5
+        int dir = kingCastleDirectionCorrection(isKingSide);
+        // Check if there are two spaces free to castle on
+        boolean spacesTowardsRookAreFree = castleSpacesAreFree(startSpot, dir, isWhite);
+        // And if there is actually a piece there (should always be, but just to be safe)
+        int castleSpot = getCastleSpot(isWhite, isKingSide);
+        boolean castleIsPresent = Board.getTokenAtSpot(castleSpot) != null;
+        if (spacesTowardsRookAreFree && castleIsPresent) {
+            // Get the end spot where the king will sit afterwards
             int targetSpot = startSpot + Director.directionCorrection(dir) * 2;
-            Move rookMove = new Move(getCastleSpot(token.isWhite, isKingSide), targetSpot - Director.directionCorrection(dir));
+            Move rookMove = new Move(castleSpot, targetSpot - Director.directionCorrection(dir));
             return new Move(startSpot, targetSpot, rookMove, false);
         }
         return null;

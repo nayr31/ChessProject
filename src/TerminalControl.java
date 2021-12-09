@@ -87,6 +87,9 @@ public class TerminalControl extends JFrame {
         static String debugOptions = "gm - Generate moves\n" +
                 "im \"a1-a2\" - Input move, without \"\n" +
                 "ap \"Ka1\" - Add a piece to the board (FEN style piece)\n" +
+                "cl - Clear the board\n" +
+                "um - Undo the last move made\n" +
+                "tt - Take Turn\n" +
                 "exit - Close";
 
         HelpWindow(){
