@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class AlMaroon {
     // This is the AI, named Al Maroon
@@ -61,12 +62,13 @@ public class AlMaroon {
 
     // Orders the list so initial pruning is more effective and efficient
     ArrayList<Move> orderedMoves(ArrayList<Move> legalMoves) {
-        ArrayList<Move> finalMoves = new ArrayList<>();
+        // Give all moves a move value
         for (Move move : legalMoves) {
             Piece startPiece = Board.getTokenAtSpot(move.startSpot);
             Piece endPiece = Board.getTokenAtSpot(move.endSpot);
+            move.scoreOfMove = 0; // Initialize score for this move, just in case
 
-            // If teh move captures a piece
+            // If the move captures a piece
             if (endPiece != null) {
                 // Set the score to be 10 times the captured piece - the piece that captured it
                 // This should make pawns capturing queens a better score
@@ -74,16 +76,21 @@ public class AlMaroon {
             }
 
             // Promoting a pawn is good
-            //TODO Finish pawn promotion ordering
-
-            // Don't want moves where the move ends in a spot that is covered by a pawn
-            if (MoveCoordinator.spotIsNotCoveredByEnemyPiece(move.endSpot, false, MoveCoordinator.generateAttackingPawnMoveSpots(false))) {
-                move.scoreOfMove -= startPiece.getPieceValue();
+            if(Board.doesPromote(move, startPiece)){
+                // Value increase would be the score of the queen minus the pawn, which is usually the obvious choice
+                // Technically, this value is always 800
+                move.scoreOfMove += Piece.getPieceValue(Piece.Type.Queen) - startPiece.getPieceValue();
             }
 
-            //arrange it in the list
+            // Don't want moves where the move ends in a spot that is covered by a pawn (obviously the pawn would take it)
+            if (MoveCoordinator.spotIsNotCoveredByEnemyPiece(move.endSpot, false,
+                    MoveCoordinator.generateAttackingPawnMoveSpots(false))) {
+                move.scoreOfMove -= startPiece.getPieceValue();
+            }
         }
 
-        return finalMoves;
+        legalMoves.sort(Collections.reverseOrder());
+
+        return legalMoves;
     }
 }

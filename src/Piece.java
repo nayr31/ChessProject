@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-
+import java.util.EnumMap;
 public class Piece {
     enum Type {
         Pawn,
@@ -9,7 +9,7 @@ public class Piece {
         King,
         Bishop,
         None
-    };
+    }
 
     Type pieceType;
     boolean isWhite;
@@ -24,22 +24,15 @@ public class Piece {
     }
 
     static Type charToType(char c){
-        switch (Character.toLowerCase(c)) {
-            case 'r':
-                return Type.Rook;
-            case 'n':
-                return Type.Knight;
-            case 'p':
-                return Type.Pawn;
-            case 'b':
-                return Type.Bishop;
-            case 'q':
-                return Type.Queen;
-            case 'k':
-                return Type.King;
-            default:
-                return Type.None;
-        }
+        return switch (Character.toLowerCase(c)) {
+            case 'r' -> Type.Rook;
+            case 'n' -> Type.Knight;
+            case 'p' -> Type.Pawn;
+            case 'b' -> Type.Bishop;
+            case 'q' -> Type.Queen;
+            case 'k' -> Type.King;
+            default -> Type.None;
+        };
     }
     
     /// Constructor for piece
@@ -71,19 +64,19 @@ public class Piece {
     // Q = 900
     // K = 20000
     int getPieceValue(){
-        if(pieceType == Piece.Type.Pawn)
-            return 100;
-        else if(pieceType == Piece.Type.Knight)
-            return 320;
-        else if(pieceType == Piece.Type.Bishop)
-            return 330;
-        else if(pieceType == Piece.Type.Rook)
-            return 500;
-        else if(pieceType == Piece.Type.Queen)
-            return 900;
-        else if(pieceType == Piece.Type.King)
-            return 20000;
-        return -1;
+        return getPieceValue(pieceType);
+    }
+
+    static int getPieceValue(Piece.Type type){
+        return switch(type){
+            case Bishop -> 330;
+            case King -> 20000;
+            case Knight -> 320;
+            case Pawn -> 100;
+            case Queen -> 900;
+            case Rook -> 500;
+            case None -> -1;
+        };
     }
 
     //Maybe less efficient than setting the spot to just store the value?
