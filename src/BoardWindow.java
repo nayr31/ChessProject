@@ -3,6 +3,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URL;
 
 class BoardWindow extends JFrame {
 
@@ -26,12 +27,19 @@ class BoardWindow extends JFrame {
 
     private void importImages() {
         //TODO finish image importing
-        Toolkit tool = Toolkit.getDefaultToolkit();
+        //Toolkit tool = Toolkit.getDefaultToolkit();
         //whitePawn = tool.getImage("white_pawn.png");
+        URL url = null;
         try{
-            whitePawn = ImageIO.read(new File("white_pawn.png"));
+            url = new URL("https://raw.githubusercontent.com/nayr31/ChessProject/main/src/images/white_pawn.png");
         } catch(Exception e){
-            System.out.println("Error reading image files.");
+            System.out.println("Error downloading image files.");
+        }
+        try{
+            if(url != null)
+                whitePawn = ImageIO.read(url);
+        } catch (Exception e){
+            System.out.println("Error converting to image.");
         }
     }
 
@@ -60,7 +68,6 @@ class BoardWindow extends JFrame {
     }
 
     public void draw(){
-
         panel.repaint();
     }
 
