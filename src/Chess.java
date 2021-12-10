@@ -46,7 +46,7 @@ class Chess {
             // If it is null, that means that an end-game state was reached
             if (superMove != null) {
                 Board.makeMove(superMove);
-                TerminalControl.refreshBoard();
+                terminalControl.refreshBoard();
                 Board.lastPlayerDidNotAct = false;
             } else {
                 Board.lastPlayerDidNotAct = true;
@@ -102,7 +102,7 @@ class Chess {
     }
 
     private Move takePlayerTurn() {
-        TerminalControl.refreshBoard();
+        terminalControl.refreshBoard();
         return InputGetter.playerTurnInput();
     }
 
@@ -114,7 +114,7 @@ class Chess {
     private void debug() {
         String input = "";
         while (true) {
-            TerminalControl.refreshBoard();
+            terminalControl.refreshBoard();
             input = InputGetter.askForString("Please input your debug command.\n" +
                     "\"help\" for options.");
             String[] split = input.split(" ");
@@ -161,7 +161,7 @@ class Chess {
     public static void main(String[] args) {
         // Initialize program
         Board.initiate();
-        if(!isPVP)
+        if(!isPVP) // Don't waste unnecessary compute time
             Scorer.initiate();
         Chess c = new Chess();
     }

@@ -12,14 +12,14 @@ public class TerminalControl extends JFrame {
     static JTextArea commandsReceivedArea = new JTextArea(5, commonColumns);
     static JTextArea statusArea = new JTextArea(3, commonColumns);
     static Semaphore semaphore = new Semaphore(0);
-    static BoardWindow boardWindow = new BoardWindow();
+    BoardWindow boardWindow = new BoardWindow();
     static HelpWindow helpWindow = new HelpWindow();
 
     TerminalControl(){
         FrameSetup.setup(this,"-Chess Program-", width, height, true, EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
         initField();
-        boardWindow.setAfter((int) (this.getWidth()*1.40));
+        boardWindow.setAfter((int) (this.getWidth()*1.80));
         helpWindow.setBefore((int) (this.getWidth()*1.60));
     }
 
@@ -66,12 +66,9 @@ public class TerminalControl extends JFrame {
         statusArea.setText(text);
     }
 
-    static void refreshBoard(){
-        BoardWindow.boardArea.setText(Board.boardString());
-    }
-
-    static void toggleBoard(){
-        boardWindow.setVisible(!boardWindow.isVisible());
+    void refreshBoard(){
+        //BoardWindow.boardArea.setText(Board.boardString());
+        boardWindow.draw();
     }
 
     static void toggleHelpWindow() { helpWindow.setVisible(!helpWindow.isVisible());}
