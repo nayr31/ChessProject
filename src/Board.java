@@ -469,6 +469,15 @@ public class Board {
         return String.valueOf(letter) + verticalSpot;
     }
 
+    static int[] convertIndexToDoubleIndex(int spot){
+        int verticalSpot = Math.floorDiv(spot, 8); // spot / 8 (9 / 8 = 1.125 = 1)
+        int horizontalSpot = Math.floorMod(spot, 8);
+        return new int[] {
+                horizontalSpot,
+                verticalSpot
+        };
+    }
+
     //Standard java inherited method override
     static public String boardString() {
         StringBuilder out = new StringBuilder();
