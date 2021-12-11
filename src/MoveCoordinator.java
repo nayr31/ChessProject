@@ -131,7 +131,7 @@ public class MoveCoordinator {
         ArrayList<Move> pawnMoves = new ArrayList<>();
         // Determine how far the pawn can move depending on how far it has moved
         int spacesToMove = 1;
-        if (!token.hasMoved)
+        if (!token.hasMoved())
             spacesToMove++;
 
         // For each of the possible move distances
@@ -245,7 +245,7 @@ public class MoveCoordinator {
         //  4 - Can't move through squares that are covered by enemy moves
         //  5 - Can't castle if king has already moved
         //  6 - Can't castle if rook has already moved
-        if (!token.hasMoved) { // (5)
+        if (!token.hasMoved()) { // (5)
             if (spotIsNotCoveredByEnemyPiece(startSpot, token.isWhite)) { // (3)
                 // (1,2,4,6)
                 if (token.isWhite ? Board.CanCastleWhiteQueen : Board.CanCastleBlackQueen) {

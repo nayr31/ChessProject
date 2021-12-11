@@ -304,27 +304,27 @@ public class Board {
                             if (CanCastleWhiteQueen && i == 7) {
                                 // Then don't do anything, since this is the white queen rook and it already hasn't moved
                             } else { // Otherwise, either the king side moved or the queen isn't allowed (and this is the queen)
-                                token.hasMoved = true;
+                                token.addDummyMove(i);
                             }
                         }
                         if (!CanCastleWhiteQueen) {
                             if (CanCastleWhiteKing && i == 0) {
                             } else {
-                                token.hasMoved = true;
+                                token.addDummyMove(i);
                             }
                         }
                     } else {
                         if (!CanCastleBlackKing) {
                             if (CanCastleBlackQueen && i == 63) {
                             } else {
-                                token.hasMoved = true;
+                                token.addDummyMove(i);
                             }
                         }
 
                         if (!CanCastleBlackQueen) {
                             if (CanCastleBlackKing && i == 56) {
                             } else {
-                                token.hasMoved = true;
+                                token.addDummyMove(i);
                             }
                         }
                     }

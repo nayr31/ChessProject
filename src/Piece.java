@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.EnumMap;
 public class Piece {
     enum Type {
         Pawn,
@@ -13,7 +12,6 @@ public class Piece {
 
     Type pieceType;
     boolean isWhite;
-    boolean hasMoved = false;
     ArrayList<Move> lastMoves = new ArrayList<>();
     String name;
 
@@ -54,6 +52,14 @@ public class Piece {
     boolean isFriendly(Piece otherToken){
         // The compare function returns 0 is the booleans are the same
         return Boolean.compare(this.isWhite, otherToken.isWhite) == 0;
+    }
+
+    boolean hasMoved(){
+        return lastMoves.size() > 0;
+    }
+
+    void addDummyMove(int spot){
+        lastMoves.add(new Move(spot, spot));
     }
 
     // Returns the literal interpretation of a piece value without multipliers
