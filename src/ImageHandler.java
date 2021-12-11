@@ -8,19 +8,21 @@ import java.nio.file.Path;
 
 public class ImageHandler {
 
-    static boolean hasLoaded = false;
+    //static boolean hasLoaded = false;
     static BufferedImage[] whitePieces = new BufferedImage[6];
     static BufferedImage[] blackPieces = new BufferedImage[6];
 
     static public void loadImages() throws Exception{
         try{
-            urlImport();
-            hasLoaded = true;
+            //urlImport();
+            //hasLoaded = true;
         } catch (Exception e){
             System.out.println("Image loading failed.");
             throw e;
         }
     }
+
+    //use java generated graphics instead of images
 
     static private void urlImport() throws Exception{
         String[] whitePieceURLStrings = new String[]{

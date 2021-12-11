@@ -4,7 +4,7 @@ class Chess {
     AlMaroon al = new AlMaroon();
     static boolean isPVP = false;
 
-    Chess() { //TODO Add optional choice for game or debug
+    Chess() {
         //game();
         debug();
     }

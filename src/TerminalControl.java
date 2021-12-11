@@ -12,7 +12,7 @@ public class TerminalControl extends JFrame {
     static JTextArea commandsReceivedArea = new JTextArea(5, commonColumns);
     static JTextArea statusArea = new JTextArea(3, commonColumns);
     static Semaphore semaphore = new Semaphore(0);
-    BoardWindow boardWindow = new BoardWindow();
+    //BoardWindow boardWindow = new BoardWindow();
     BoardWindowDefault boardWindowDefault;
     static HelpWindow helpWindow = new HelpWindow();
 
@@ -20,22 +20,22 @@ public class TerminalControl extends JFrame {
         FrameSetup.setup(this,"-Chess Program-", width, height, true, EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
         initField();
-        boardWindow.setAfter((int) (this.getWidth()*1.80));
+        //boardWindow.setAfter((int) (this.getWidth()*1.80));
         helpWindow.setBefore((int) (this.getWidth()*1.60));
         TerminalControl.sendCommandText("Loading images from internet, please make sure you have a connection...");
-        try {
-            ImageHandler.loadImages();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if(!ImageHandler.hasLoaded){
-            TerminalControl.sendStatusMessage("Image loading has failed!\n" +
-                    "Defaulting to simple board :(\n" +
-                    "You can find images of the board in action in the submission.");
-            boardWindow.setVisible(false);
-            boardWindowDefault = new BoardWindowDefault();
-            boardWindowDefault.setAfter((int) (this.getWidth()*1.40));
-        }
+        //try {
+        //    ImageHandler.loadImages();
+        //} catch (Exception e) {
+        //    e.printStackTrace();
+        //}
+        //if(!ImageHandler.hasLoaded){
+        //    TerminalControl.sendStatusMessage("Image loading has failed!\n" +
+        //            "Defaulting to simple board :(\n" +
+        //            "You can find images of the board in action in the submission.");
+        // boardWindow.setVisible(false);
+        boardWindowDefault = new BoardWindowDefault();
+        boardWindowDefault.setAfter((int) (this.getWidth()*1.40));
+        //}
     }
 
     // Creates and places the fields on the screen
@@ -82,19 +82,19 @@ public class TerminalControl extends JFrame {
     }
 
     void refreshBoard(){
-        if(ImageHandler.hasLoaded)
-            boardWindow.draw();
-        else{
+        //if(ImageHandler.hasLoaded)
+        //    boardWindow.draw();
+        //else{
             BoardWindowDefault.boardArea.setText(Board.boardString());
-        }
+        //}
     }
 
     static void toggleHelpWindow() { helpWindow.setVisible(!helpWindow.isVisible());}
 
     static void setBoardMessage(String message){
-        if(ImageHandler.hasLoaded)
-            BoardWindow.setLastMoveArea(message);
-        else
+        //if(ImageHandler.hasLoaded)
+        //    BoardWindow.setLastMoveArea(message);
+        //else
             BoardWindowDefault.setLastMoveArea(message);
     }
 

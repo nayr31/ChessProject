@@ -2,11 +2,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/*
+If you are seeing this, turn back. This entire class was a mistake, java is horrible.
+I spent DAYS trying to get a graphical interface working (no buttons, just pictures), but could not get it working.
+The board? Shown. The numbers? Shown. The pieces? Shown.
+But the letters on the bottom? An absolute headache that brought my sanity down.
+ */
+
 class BoardWindow extends JFrame {
 
     static int width = 415;
-    static int height = 450;
-    static JTextArea boardArea = new JTextArea(11, 20);
+    static int height = 460;
     static JTextArea lastMoveArea = new JTextArea(1, 13);
     DrawPane panel;
 
@@ -14,7 +20,7 @@ class BoardWindow extends JFrame {
         FrameSetup.setup(this, "-Board Window-", width, height, true, EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
         initField();
-        panel = setPanel();
+        setPanel();
     }
 
     void setAfter(int parentWidth) {
@@ -26,18 +32,16 @@ class BoardWindow extends JFrame {
     }
 
     void initField() {
-        boardArea.setEditable(false);
-        boardArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         lastMoveArea.setEditable(false);
         add(lastMoveArea);
     }
 
-    private DrawPane setPanel() {
-        DrawPane panel = new DrawPane();
+    void setPanel() {
+        DrawPane drawPane = new DrawPane();
         Container container = getContentPane();
-        container.add(panel);
-        panel.setPreferredSize(new Dimension(width, height));
-        return panel;
+        container.add(drawPane);
+        drawPane.setPreferredSize(new Dimension(width - 10, height - 10));
+        panel = drawPane;
     }
 
     public void draw() {
@@ -51,7 +55,7 @@ class BoardWindow extends JFrame {
             super.paintComponent(g);
             paintBoard((Graphics2D) g);
             paintNotation((Graphics2D) g);
-            paintPieces((Graphics2D) g);
+            //paintPieces((Graphics2D) g);
         }
 
         static final int spotWidth = 50;
@@ -81,15 +85,26 @@ class BoardWindow extends JFrame {
         // Paint the letters and numbers
         private void paintNotation(Graphics g) {
             g.setColor(Color.black);
+            paintNumbers(g);
+            paintLetters(g);
+        }
 
-            // Horizontal
-            //TODO finish lettered indexes (location multipliers)
-            for (int i = 0; i < 8; i++) {
-                char c = (char)(i + 97);
-                g.drawString(String.valueOf(c), 10 + spotWidth / 2 + 10, boardYOffset + 7 * spotHeight + 25);
-            }
+        private void paintLetters(Graphics g){
+            char[] characters = new char[]{
+                    'a',
+                    'b',
+                    'c',
+                    'd',
+                    'e',
+                    'f',
+                    'g',
+                    'h'
+            };
+            //g.drawChars(characters, 0, 8, 95, 325);
+            //g.drawString("b", 95, 7*50);
+        }
 
-
+        private void paintNumbers(Graphics g){
             // Vertical numbers
             for (int i = 8; i > 0; i--)
                 g.drawString(String.valueOf(9 - i), 12, (int) (i * spotHeight * 0.93 - spotHeight / 2));
@@ -109,12 +124,12 @@ class BoardWindow extends JFrame {
                 }
             }
             //g.drawImage(whitePieces, 0, 0, 50, 50, this);
-            //TODO finish piece spot painting (location multipliers)
+            //finish piece spot painting (location multipliers)
         }
 
-        private int[] getNormalizedImageSize(BufferedImage image){
+        private int[] getNormalizedImageSize(BufferedImage image) {
             int w = image.getWidth() >= image.getHeight() ? image.getWidth() : image.getHeight() / 40;
-            return new int[] {
+            return new int[]{
                     image.getWidth() / w,
                     image.getHeight() / w
             };
