@@ -41,7 +41,7 @@ public class MoveCoordinator {
     static ArrayList<Move> getKingMoves(boolean isWhite) {
         Spot[] spots = Board.getSpots();
         int kingSpot = getKingSpot(isWhite);
-        if (kingSpot == -1) return null;
+        if (kingSpot == -1) return new ArrayList<Move>();
         else return generateKingMoves(kingSpot, spots[kingSpot].spotPiece);
     }
 
@@ -585,7 +585,8 @@ public class MoveCoordinator {
     //DO NOT USE IN FINAL PRODUCT
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
-        moves.addAll(getKingMoves(isWhite));
+        ArrayList<Move> kingMoves = getKingMoves(isWhite);
+        moves.addAll(kingMoves);
         return moves;
     }
 

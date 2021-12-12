@@ -5,8 +5,8 @@ class Chess {
     static boolean isPVP = false;
 
     Chess() {
-        //game();
-        debug();
+        game();
+        //debug();
     }
 
     private void game() {

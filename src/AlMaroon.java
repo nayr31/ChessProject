@@ -34,7 +34,9 @@ public class AlMaroon {
 
         ArrayList<Move> moves = orderedMoves(MoveCoordinator.generateLegalMoves());
         if (moves.isEmpty()) { // No possible moves for this player, either checkmate or stalemate
-            return new SearchDTO(null, Integer.MIN_VALUE);
+            if(Board.playerInCheck()) // Checkmate
+                return new SearchDTO(null, Integer.MIN_VALUE);
+            return new SearchDTO(null, 0); // Stalemate
         }
 
         Move bestMove = null;
@@ -48,11 +50,17 @@ public class AlMaroon {
             // After it is done change the turn back and determine the best values
             Board.unmakeMove();
             Board.changeTurns(false);
-            if (eval.eval >= beta) { // Opponent will avoid this, move was too good
-                return new SearchDTO(eval.move, beta); // Snip the branch
+
+            if(bestMove == null){ // TODO Look into moving this, AI is suicidal
+                bestMove = move;
             }
+
+            if (eval.eval >= beta) { // Opponent will avoid this, move was too good
+                return new SearchDTO(move, beta); // Snip the branch
+            }
+
             if (eval.eval >= alpha) {
-                bestMove = eval.move;
+                bestMove = move;
                 alpha = eval.eval;
             }
         }
@@ -61,6 +69,7 @@ public class AlMaroon {
     }
 
     // Orders the list so initial pruning is more effective and efficient
+    // This is based on predicting the future score of a move based on certain aspects such as promotion
     ArrayList<Move> orderedMoves(ArrayList<Move> legalMoves) {
         // Give all moves a move value
         for (Move move : legalMoves) {
@@ -93,4 +102,36 @@ public class AlMaroon {
 
         return legalMoves;
     }
+
+    //SearchDTO searchMinimax(int depth){
+    //    if(depth == 0)
+    //        return new SearchDTO(null, Scorer.scoreBoard());
+//
+    //    ArrayList<Move> moves = MoveCoordinator.generateLegalMoves();
+    //    if(moves.isEmpty()){ // No possible moves for this player
+    //        if(Board.playerInCheck()) // Is in check, which you never want
+    //            return new SearchDTO(null, -9999999);
+    //        return new SearchDTO(null, 0); // Or it is a stalemate
+    //    }
+//
+    //    int bestEval = -9999999;
+    //    Move bestMove = null;
+//
+    //    for(Move move:moves){
+    //        // Make the move then change the turn
+    //        Board.makeMove(move);
+    //        Board.changeTurns();
+    //        // Repeat on the next turn
+    //        SearchDTO eval = searchMinimax(depth-1).minus();
+    //        // After it is done change the turn back and determine the best values
+    //        Board.changeTurns();
+    //        Board.unmakeMove();
+    //        if(eval.eval < bestEval){ // Check if it is better
+    //            bestEval = eval.eval;
+    //            bestMove = eval.move;
+    //        }
+    //    }
+//
+    //    return new SearchDTO(bestMove, bestEval);
+    //}
 }
