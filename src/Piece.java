@@ -111,7 +111,7 @@ public class Piece {
     Move getLastMove(){
         if(lastMoves.size() != 0)
             return lastMoves.get(lastMoves.size()-1);
-        return null;
+        return new Move(0,0);
     }
 
     void changeLastMove(Move move){
