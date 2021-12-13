@@ -174,12 +174,15 @@ public class MoveCoordinator {
                     target = spots[passantTargetSpot].spotPiece;
                     if (target != null) { // There is a piece at the new targetSpot
                         // Check if it is an enemy pawn that move delta is 16 (moved 2 spaces)
-                        if (target.pieceType == Piece.Type.Pawn
-                                && !token.isFriendly(target)
-                                && target.getLastMove().moveDelta() == 16) {
-                            // Add the move, but make the spot that dies the enemy pawn
-                            // So it would technically move into the pawn, then towards its final destination
-                            pawnMoves.add(new Move(startSpot, passantTargetSpot, new Move(passantTargetSpot, targetSpot)));
+                        Move targetLastMove = target.getLastMove();
+                        if(targetLastMove != null){ // If the target hasn't moved yet, then they can't be passant-d
+                            if (target.pieceType == Piece.Type.Pawn
+                                    && !token.isFriendly(target)
+                                    && targetLastMove.moveDelta() == 16) {
+                                // Add the move, but make the spot that dies the enemy pawn
+                                // So it would technically move into the pawn, then towards its final destination
+                                pawnMoves.add(new Move(startSpot, passantTargetSpot, new Move(passantTargetSpot, targetSpot)));
+                            }
                         }
                     }
                 }

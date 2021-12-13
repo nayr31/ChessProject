@@ -35,7 +35,7 @@ public class Move implements Comparable<Move>{
         this(startSpot, endSpot, embeddedMove);
         this.embeddedMove.isSamePiece = isSamePiece;
     }
-    //Todo put in check for null last move
+
     int moveDelta(){
         if(embeddedMove != null)
             return Math.abs(embeddedMove.embeddedMove.endSpot - startSpot);
