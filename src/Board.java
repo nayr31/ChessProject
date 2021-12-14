@@ -651,7 +651,16 @@ public class Board {
         return spots;
     }
 
+    /**
+     * This method clears the board
+     */
+    public static void clear() {
+        for(int i=0;i<64;i++)
+            spots[i].spotPiece = null;
+    }
+
 }
+
 
 /*
 This is the idea of the 1 dimensional board:

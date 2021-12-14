@@ -142,7 +142,7 @@ class Chess {
                         }
                     }
                 }
-                case "cl" -> Board.spots = new Spot[63];
+                case "cl" -> Board.clear();
                 case "um" -> Board.unmakeMove();
                 case "tt" -> {
                     Move move = takePlayerTurn();
@@ -157,6 +157,7 @@ class Chess {
             }
         }
     }
+
 
     public static void main(String[] args) {
         // Initialize program

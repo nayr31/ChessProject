@@ -578,16 +578,20 @@ public class MoveCoordinator {
 
     // Another method in case we want a specific color move list
     public static ArrayList<Move> generateLegalMoves() {
-        return generateLegalMoves(Board.isWhiteTurn);
+        //return generateLegalMoves(Board.isWhiteTurn);
+        return generateLegalMovesOLD(Board.isWhiteTurn);
     }
 
     //TEMPORARY TESTING METHOD
     //DO NOT USE IN FINAL PRODUCT
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
+        //return generateLegalMovesOLD(isWhite);
+
         ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
         ArrayList<Move> kingMoves = getKingMoves(isWhite);
         moves.addAll(kingMoves);
         return moves;
+
     }
 
     //TODO Generating legal moves needs to be finished
@@ -596,7 +600,9 @@ public class MoveCoordinator {
     // We can also instead make the move, check if it is bad, and add it if it wasn't
     public static ArrayList<Move> generateLegalMovesOLD(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
+        Board.aiIsActing = true;
         ArrayList<Move> moves = new ArrayList<>();
+        ArrayList<Move> legalMoves = new ArrayList<>();
         Spot[] spots = Board.getSpots();
 
         int kingSpot = getKingSpot(isWhite);
@@ -617,7 +623,8 @@ public class MoveCoordinator {
         defenders.addAll(friendlyPawnAttackingMoves);
 
         // Check to see if our king is in check, this limits our moves to those that break the attackers or block line of sight
-        if (!spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)) {
+        if (spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)) {
+            System.out.println("check?");
             // King is in check, must find all possible moves that would save him
 
             // First check for moves that the king can take
@@ -642,20 +649,29 @@ public class MoveCoordinator {
                 }
                 // Sometimes there will be no defenders that are able to kill the attacker
                 if (potentialSacrifices.size() != 0)
-                    return potentialSacrifices;
+                    legalMoves.addAll(potentialSacrifices);
                 // Don't return, add to overall list
             }
             // This means that we need to see if we can block the attacking pieces
             // Checks on each square to see if there is an end spot in that list
-
-            return moves;
+            Board.aiIsActing = false;
+            return legalMoves;
         }
 
         // King is not in check, add in all possible legal moves
         moves.addAll(friendlyKingMoves);
         moves.addAll(friendlyPieceMoves);
+        System.out.println(moves.size());
+        for (Move move:moves) {
+            Board.makeMove(move);
+            if(!spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)){
+               legalMoves.add(move);
+            }
+            Board.unmakeMove();
+        }
 
         TerminalControl.sendStatusMessage("Finished generating legal moves.");
-        return moves;
+        Board.aiIsActing = false;
+        return legalMoves;
     }
 }
