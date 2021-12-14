@@ -44,10 +44,6 @@ public class Board {
         }
     }
 
-    public static void clear() {
-        spots = new Spot[64];
-    }
-
     public static void outputToFile() {
         StringBuilder line = new StringBuilder();
         // [0] = Board spaces

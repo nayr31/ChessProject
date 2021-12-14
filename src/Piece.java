@@ -40,12 +40,16 @@ public class Piece {
         this.isWhite = isWhite;
     }
 
-    // Long range sliding pieces (Bishop, Queen and Rook)
-    boolean isSlidingType(){
-        return switch (pieceType) {
+    static boolean isSlidingType(Piece.Type type){
+        return switch (type) {
             case Bishop, Queen, Rook -> true;
             default -> false;
         };
+    }
+
+    // Long range sliding pieces (Bishop, Queen and Rook)
+    boolean isSlidingType(){
+        return isSlidingType(pieceType);
     }
 
     // Returns if another piece is friendly to this token

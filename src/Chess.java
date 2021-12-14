@@ -77,8 +77,8 @@ class Chess {
             // If a player was in check, then there is a winner
             if (whiteInCheck || blackInCheck) {
                 if (blackInCheck)
-                    Board.winner = "Black";
-                else Board.winner = "White";
+                    Board.winner = "White";
+                else Board.winner = "Black";
                 TerminalControl.sendCommandText(Board.winner + " has won.");
             } else{
                 if (Board.isStaleMate()) // Otherwise, check for a flat stalemate
