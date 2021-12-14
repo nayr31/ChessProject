@@ -9,6 +9,10 @@ public class FileDecoder {
     static final int readLimit = 500; // Set a read limit for the number of lines for performance reasons
     static final Move[] castleMoves = generateCastleMoves();
 
+    //TODO Preform major testing on this, moves like "Nc6" are failing from a NotLocationException
+    // The method "removePlusFromEndLocation" is causing the problem
+    // Either make another dedicated method for it, or figure out why it isn't working in the first place
+
     static void populateGMGameMoves() {
         try {
             populateGMGames();
@@ -43,6 +47,7 @@ public class FileDecoder {
 
         Board.aiIsActing = false;
         Board.clear();
+        System.out.println("Loaded gm game moves.");
     }
 
     // We only want games that black wins and that only queen promotions are present if any
@@ -78,84 +83,87 @@ public class FileDecoder {
                 return null;
             }
         }
-
-        // Otherwise, we need to generate the locations
-        int substringOffset = 1;
-
         Piece.Type moveType = charToPieceType(Character.toLowerCase(input.charAt(0)));
-        if (moveType == Piece.Type.Pawn)
-            substringOffset = 0;
 
-        // Move involves a capture
-        if (input.contains("x")) {
-            // Pawn captures only involve the column as an identifier
-            try {
-                int targetLocation = Board.convertInputToIndex(removePlusFromEndLocation(input));
-                int startLocation =  -1;
-                if (moveType == Piece.Type.Pawn) {
-                    // The string will have the letter in the column as the first character
-                    startLocation = getPawnLocationBeforeAttacking(targetLocation,
-                            Board.covertLetterToIndex(input.charAt(0)));
-                } else{ // Piece is a normal piece
-                    ArrayList<Integer> possiblePieceLocations =
-                            findLocationsOfPieceType(moveType, Board.isWhiteTurn);
-                    if(possiblePieceLocations.size() == 1){
-                        return new Move(possiblePieceLocations.get(0), targetLocation);
-                    } else {
-                        // This means that there are more than one piece of that type
-                        // Generate the moves of those types
-                        ArrayList<Move> movesOfThatType =
-                                generateMovesByPieceTypeAndLocations(moveType, possiblePieceLocations);
-                        // Now check to see if more than one piece has that target location
-                        ArrayList<Move> possibleMoves = new ArrayList<>();
-                        for(Move possibleMove:movesOfThatType){
-                            if(possibleMove.endSpot == targetLocation)
-                                possibleMoves.add(possibleMove);
-                        }
-                        if(possibleMoves.size() == 0)
-                            return null;
-                        if(possibleMoves.size() > 2)
-                            return null;
-                        if(possibleMoves.size() == 1){
-                            return possibleMoves.get(0);
-                        }
-                        // Last possible outcome is that the size is two
-                        // This means that we need to get the col in the string and reference the start loc
-                        //TODO Finish moves of normal pieces
+        // Pawn captures only involve the column as an identifier
+        try {
+            int targetLocation = Board.convertInputToIndex(removePlusFromEndLocation(input));
+            int startLocation = -1;
+            if (moveType == Piece.Type.Pawn) {
+                // The string will have the letter in the column as the first character
+                startLocation = getPawnLocationBeforeAttacking(targetLocation,
+                        Board.convertLetterToIndex(input.charAt(0)));
+            } else { // Piece is a normal piece
+                ArrayList<Integer> possiblePieceLocations =
+                        findLocationsOfPieceType(moveType, Board.isWhiteTurn);
+                if (possiblePieceLocations.size() == 1) {
+                    return new Move(possiblePieceLocations.get(0), targetLocation);
+                } else {
+                    // This means that there are more than one piece of that type
+                    // Generate the moves of those types
+                    ArrayList<Move> movesOfThatType =
+                            generateMovesByPieceTypeAndLocations(moveType, possiblePieceLocations);
+                    // Now check to see if more than one piece has that target location
+                    ArrayList<Move> possibleMoves = new ArrayList<>();
+                    for (Move possibleMove : movesOfThatType) {
+                        if (possibleMove.endSpot == targetLocation)
+                            possibleMoves.add(possibleMove);
+                    }
+                    if (possibleMoves.size() == 0)
+                        return null;
+                    if (possibleMoves.size() > 2)
+                        return null;
+                    if (possibleMoves.size() == 1) {
+                        return possibleMoves.get(0);
+                    }
+                    // Last possible outcome is that the size is two
+                    // This means that we need to get the col in the string and reference the start loc
+                    int col = Board.convertLetterToIndex(input.charAt(1));
+                    for (int i = 0; i < 8; i++) { // For each row
+                        int suggestedStartSpot = col + i*8;
+                        Move move = moveListHasStartSpot(possibleMoves, suggestedStartSpot);
+                        if(move != null)
+                            return move;
                     }
                 }
-                if(startLocation != -1 && targetLocation != -1)
-                    return new Move(startLocation, targetLocation);
-            } catch (NotLocationException e) {
-                return null;
             }
+            if (startLocation != -1 && targetLocation != -1)
+                return new Move(startLocation, targetLocation);
+        } catch (NotLocationException e) {
+            return null;
         }
 
-        // Find the piece end square
+        return null;
+    }
 
+    private static Move moveListHasStartSpot(ArrayList<Move> moves, int spot){
+        for(Move move: moves){
+            if(move.startSpot == spot)
+                return move;
+        }
         return null;
     }
 
     private static ArrayList<Move> generateMovesByPieceTypeAndLocations(Piece.Type moveType, ArrayList<Integer> possiblePieceLocations) {
         ArrayList<Move> moves = new ArrayList<>();
-        for(Integer i:possiblePieceLocations){
-            if(Piece.isSlidingType(moveType)){
+        for (Integer i : possiblePieceLocations) {
+            if (Piece.isSlidingType(moveType)) {
                 moves.addAll(MoveCoordinator.generateSlidingMoves(i, Board.spots[i].spotPiece));
             } else if (moveType == Piece.Type.Knight) {
                 moves.addAll(MoveCoordinator.generateKnightMoves(i, Board.spots[i].spotPiece));
-            } else if (moveType == Piece.Type.King){
+            } else if (moveType == Piece.Type.King) {
                 moves.addAll(MoveCoordinator.generateKingMoves(i, Board.spots[i].spotPiece));
             } // Will never have pawns here
         }
         return moves;
     }
 
-    private static ArrayList<Integer> findLocationsOfPieceType(Piece.Type targetType, boolean isWhite){
+    private static ArrayList<Integer> findLocationsOfPieceType(Piece.Type targetType, boolean isWhite) {
         ArrayList<Integer> locations = new ArrayList<>();
         for (int i = 0; i < 63; i++) {
-            if(Board.spots[i].spotPiece != null){
+            if (Board.spots[i].spotPiece != null) {
                 Piece piece = Board.spots[i].spotPiece;
-                if(piece.pieceType == targetType && piece.isWhite == isWhite){
+                if (piece.pieceType == targetType && piece.isWhite == isWhite) {
                     locations.add(i);
                 }
             }
@@ -163,21 +171,21 @@ public class FileDecoder {
         return locations;
     }
 
-    private static int getPawnLocationBeforeAttacking(int target, int col){
+    private static int getPawnLocationBeforeAttacking(int target, int col) {
         //TODO Finish pawn location before attacking
         int[] pawnAttackDirections = Director.pawnAttackDirectionCorrection(Board.isWhiteTurn);
         return -1;
     }
 
-    private static String removePlusFromEndLocation(String line){
+    private static String removePlusFromEndLocation(String line) {
         int offset = 0;
-        if(stringHasPlus(line))
+        if (stringHasPlus(line))
             offset = 1;
         return line.substring(line.length() - 1 - offset - 2, line.length() - 1 - offset);
     }
 
-    private static boolean stringHasPlus(String line){
-        return line.charAt(line.length()-1) == '+';
+    private static boolean stringHasPlus(String line) {
+        return line.charAt(line.length() - 1) == '+';
     }
 
     private static int getPawnStandardMoveLocation(int location) {
@@ -249,7 +257,7 @@ public class FileDecoder {
             return Piece.Type.Pawn;
     }
 
-    static void populateGMGames() throws FileNotFoundException {
+    private static void populateGMGames() throws FileNotFoundException {
         File file = new File("Games.txt");
         Scanner scanner = new Scanner(file);
 

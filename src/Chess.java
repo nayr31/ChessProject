@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+
 class Chess {
 
     TerminalControl terminalControl = new TerminalControl();
@@ -5,8 +7,10 @@ class Chess {
     static boolean isPVP = false;
 
     Chess() {
-        game();
+        //game();
         //debug();
+        FileDecoder.populateGMGameMoves();
+        System.exit(1);
     }
 
     private void game() {

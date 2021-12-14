@@ -203,15 +203,33 @@ public class Scorer {
     }
 
     static int countColor(boolean isWhite){
-        Spot[] spots = Board.getSpots();
         int count = 0;
-        for (Spot spot : spots) {
-            Piece token = spot.spotPiece;
+        for (int i = 0; i < 64; i++) {
+            Piece token = Board.spots[i].spotPiece;
             if (token != null) {
                 if (token.isWhite == isWhite)
-                    count += token.getPieceValue();
+                    count += token.getPieceValue()
+                            * getValueOfPieceByLocationAndTypeAndColor(i, token.pieceType, token.isWhite);
             }
         }
         return count;
+    }
+
+    static int getValueOfPieceByLocationAndTypeAndColor(int location, Piece.Type type, boolean isWhite){
+        int[] referenceArray = switch (type) {
+            case Rook -> isWhite ? rookMultiplier : rookMultiplierBlack;
+            case Knight ->  isWhite ? knightMultiplier : knightMultiplierBlack;
+            case Pawn -> isWhite ? pawnMultiplier : pawnMultiplierBlack;
+            case Bishop -> isWhite ? bishopMultiplier : bishopMultiplierBlack;
+            case Queen -> isWhite ? queenMultiplier : queenMultiplierBlack;
+            case King -> isWhite ? kingLateMultiplier : kingLateMultiplierBlack;
+            case None -> null;
+        };
+        if(referenceArray == null){
+            System.out.println("Something went wrong scoring a piece:\n" +
+                    location + " " + type + " " + isWhite);
+            System.exit(1);
+        }
+        return referenceArray[location];
     }
 }

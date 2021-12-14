@@ -222,151 +222,157 @@ public class Board {
 
     //Populates the board from the FEN string
     //TODO Enable error proofing for the FEN input
-    static void popFromFEN(String inputString) {
-        Board.clear();
-        //Split the input into its separate functions:
-        // [0] = Board spaces
-        // [1] = Turn to move (b - black, w - white)
-        // [2] = Castling rights (up to 4 characters, K/Q are white, king side, queen side, - is empty)
-        // [3] = Space for en-passant
-        // [4] = Half move, how many moves each player has made together
-        // [5] = Full move, how many times black has moved
-        String[] varInput = inputString.split(" ");
+    static boolean popFromFEN(String inputString) {
+        try{
+            Board.clear();
+            //Split the input into its separate functions:
+            // [0] = Board spaces
+            // [1] = Turn to move (b - black, w - white)
+            // [2] = Castling rights (up to 4 characters, K/Q are white, king side, queen side, - is empty)
+            // [3] = Space for en-passant
+            // [4] = Half move, how many moves each player has made together
+            // [5] = Full move, how many times black has moved
+            String[] varInput = inputString.split(" ");
 
-        // --------- Step 0 ---------
-        //Separate the string into each row
-        String[] inputArray = varInput[0].split("/");
-        for (int i = 0; i < inputArray.length; i++) {
-            String rowString = inputArray[i];
-            //Now have a row of FEN input (first iteration is top, 56-63)
-            //Since the input string starts at 56 (standard FEN), we inverse the string so it works and I don't have to change anything
-            rowString = (new StringBuilder(rowString)).reverse().toString();
+            // --------- Step 0 ---------
+            //Separate the string into each row
+            String[] inputArray = varInput[0].split("/");
+            for (int i = 0; i < inputArray.length; i++) {
+                String rowString = inputArray[i];
+                //Now have a row of FEN input (first iteration is top, 56-63)
+                //Since the input string starts at 56 (standard FEN), we inverse the string so it works and I don't have to change anything
+                rowString = (new StringBuilder(rowString)).reverse().toString();
 
-            // Get every character input from the FEN row string (/xxx/)
-            int j = 0;
-            for (char pieceChar : rowString.toCharArray()) {
-                // Determine the spot location in the array
-                // - Start at 63
-                // - Backtrack down the row from each character read (piece placed)
-                // - Every row skips 8 immediately
-                int spotLoc = 63 - j - 8 * i;
+                // Get every character input from the FEN row string (/xxx/)
+                int j = 0;
+                for (char pieceChar : rowString.toCharArray()) {
+                    // Determine the spot location in the array
+                    // - Start at 63
+                    // - Backtrack down the row from each character read (piece placed)
+                    // - Every row skips 8 immediately
+                    int spotLoc = 63 - j - 8 * i;
 
-                // If the character is not a digit, we set that spot to have a piece
-                if (!Character.isDigit(pieceChar)) {
-                    //So set the spot on the board to that piece
-                    placeNewPiece(pieceChar, spotLoc);
-                    j++;
-                } else { // If it is a digit, we skip that many spaces horizontally
-                    j += Integer.parseInt(String.valueOf(pieceChar));
+                    // If the character is not a digit, we set that spot to have a piece
+                    if (!Character.isDigit(pieceChar)) {
+                        //So set the spot on the board to that piece
+                        placeNewPiece(pieceChar, spotLoc);
+                        j++;
+                    } else { // If it is a digit, we skip that many spaces horizontally
+                        j += Integer.parseInt(String.valueOf(pieceChar));
+                    }
                 }
             }
-        }
 
-        // --------- Step 1 ---------
-        // Whose turn it is
-        isWhiteTurn = varInput[1].equals("w");
+            // --------- Step 1 ---------
+            // Whose turn it is
+            isWhiteTurn = varInput[1].equals("w");
 
-        // --------- Step 2 ---------
-        // Castling rights for each side
-        CanCastleWhiteKing = false;
-        CanCastleWhiteQueen = false;
-        CanCastleBlackKing = false;
-        CanCastleBlackQueen = false;
-        // Check which can (ie. havn't moved yet)
-        for (char c : varInput[2].toCharArray()) {
-            switch (c) {
-                case 'K': // White king side
-                    CanCastleWhiteKing = true;
-                    break;
-                case 'Q':
-                    CanCastleWhiteQueen = true;
-                    break;
-                case 'k':
-                    CanCastleBlackKing = true;
-                    break;
-                case 'q':
-                    CanCastleBlackQueen = true;
-                    break;
+            // --------- Step 2 ---------
+            // Castling rights for each side
+            CanCastleWhiteKing = false;
+            CanCastleWhiteQueen = false;
+            CanCastleBlackKing = false;
+            CanCastleBlackQueen = false;
+            // Check which can (ie. havn't moved yet)
+            for (char c : varInput[2].toCharArray()) {
+                switch (c) {
+                    case 'K': // White king side
+                        CanCastleWhiteKing = true;
+                        break;
+                    case 'Q':
+                        CanCastleWhiteQueen = true;
+                        break;
+                    case 'k':
+                        CanCastleBlackKing = true;
+                        break;
+                    case 'q':
+                        CanCastleBlackQueen = true;
+                        break;
+                }
             }
-        }
-        // Then punish the ones that have moved
-        // [King ... Queen]
-        //  56   ...  63   Black
-        //  0    ...  7    White
-        // Check every spot
-        for (int i = 0; i < spots.length; i++) {
-            Piece token = spots[i].spotPiece;
-            if (token != null) {
-                if (token.pieceType == Piece.Type.Rook) {
-                    if (token.isWhite) {
-                        if (!CanCastleWhiteKing) {
-                            // If you can castle the white queen side, and this is on that spot
-                            if (CanCastleWhiteQueen && i == 7) {
-                                // Then don't do anything, since this is the white queen rook and it already hasn't moved
-                            } else { // Otherwise, either the king side moved or the queen isn't allowed (and this is the queen)
-                                token.addDummyMove(i);
+            // Then punish the ones that have moved
+            // [King ... Queen]
+            //  56   ...  63   Black
+            //  0    ...  7    White
+            // Check every spot
+            for (int i = 0; i < spots.length; i++) {
+                Piece token = spots[i].spotPiece;
+                if (token != null) {
+                    if (token.pieceType == Piece.Type.Rook) {
+                        if (token.isWhite) {
+                            if (!CanCastleWhiteKing) {
+                                // If you can castle the white queen side, and this is on that spot
+                                if (CanCastleWhiteQueen && i == 7) {
+                                    // Then don't do anything, since this is the white queen rook and it already hasn't moved
+                                } else { // Otherwise, either the king side moved or the queen isn't allowed (and this is the queen)
+                                    token.addDummyMove(i);
+                                }
                             }
-                        }
-                        if (!CanCastleWhiteQueen) {
-                            if (CanCastleWhiteKing && i == 0) {
-                            } else {
-                                token.addDummyMove(i);
+                            if (!CanCastleWhiteQueen) {
+                                if (CanCastleWhiteKing && i == 0) {
+                                } else {
+                                    token.addDummyMove(i);
+                                }
                             }
-                        }
-                    } else {
-                        if (!CanCastleBlackKing) {
-                            if (CanCastleBlackQueen && i == 63) {
-                            } else {
-                                token.addDummyMove(i);
+                        } else {
+                            if (!CanCastleBlackKing) {
+                                if (CanCastleBlackQueen && i == 63) {
+                                } else {
+                                    token.addDummyMove(i);
+                                }
                             }
-                        }
 
-                        if (!CanCastleBlackQueen) {
-                            if (CanCastleBlackKing && i == 56) {
-                            } else {
-                                token.addDummyMove(i);
+                            if (!CanCastleBlackQueen) {
+                                if (CanCastleBlackKing && i == 56) {
+                                } else {
+                                    token.addDummyMove(i);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // --------- Step 3 ---------
-        // Which pawns can be en-passant-ed
-        // Use ascii and j,i multiplication
-        // First char is a letter (a-h), 97-(ascii value) for j (left-right)
-        // Second char is a number (1-8), 63-8*(number value-1) for i (up-down)
-        if (varInput[3].length() != 1) { // If the space is not empty, diagnose it
-            // If there is a viable passant move, then check every two spaces for them
-            for (int i = 0; i < varInput[3].length(); i += 2) {
-                // Get the space of the passant target
-                String passantString = varInput[3].substring(i, i + 2);
-                // Get the int interpretation of the target square
-                int passantSquare = 0;
-                try {
-                    passantSquare = convertInputToIndex(passantString);
-                } catch (NotLocationException e) {
-                    e.printStackTrace(); // This should never happen
+            // --------- Step 3 ---------
+            // Which pawns can be en-passant-ed
+            // Use ascii and j,i multiplication
+            // First char is a letter (a-h), 97-(ascii value) for j (left-right)
+            // Second char is a number (1-8), 63-8*(number value-1) for i (up-down)
+            if (varInput[3].length() != 1) { // If the space is not empty, diagnose it
+                // If there is a viable passant move, then check every two spaces for them
+                for (int i = 0; i < varInput[3].length(); i += 2) {
+                    // Get the space of the passant target
+                    String passantString = varInput[3].substring(i, i + 2);
+                    // Get the int interpretation of the target square
+                    int passantSquare = 0;
+                    try {
+                        passantSquare = convertInputToIndex(passantString);
+                    } catch (NotLocationException e) {
+                        e.printStackTrace(); // This should never happen
+                    }
+                    // Determine the spaceDelta, which offsets where the piece and its startSpot is
+                    int spaceDelta = 8;
+                    if (passantSquare > 23) // Black piece
+                        spaceDelta = -8;
+                    // Set the piece's last move with a moveDelta of 2
+                    spots[passantSquare + spaceDelta].spotPiece.changeLastMove(
+                            new Move(passantSquare - spaceDelta, passantSquare + spaceDelta));
+
                 }
-                // Determine the spaceDelta, which offsets where the piece and its startSpot is
-                int spaceDelta = 8;
-                if (passantSquare > 23) // Black piece
-                    spaceDelta = -8;
-                // Set the piece's last move with a moveDelta of 2
-                spots[passantSquare + spaceDelta].spotPiece.changeLastMove(
-                        new Move(passantSquare - spaceDelta, passantSquare + spaceDelta));
-
             }
+
+            // --------- Step 4 ---------
+            // Half moves
+            halfMoves = Integer.parseInt(varInput[4]);
+
+            // --------- Step 5 ---------
+            // Full moves
+            fullMoves = Integer.parseInt(varInput[5]);
+            return true;
+        } catch (Exception e){
+            TerminalControl.sendStatusMessage("Failed to decode FEN String!");
+            return false;
         }
-
-        // --------- Step 4 ---------
-        // Half moves
-        halfMoves = Integer.parseInt(varInput[4]);
-
-        // --------- Step 5 ---------
-        // Full moves
-        fullMoves = Integer.parseInt(varInput[5]);
     }
 
     public static void placeNewPiece(char pieceChar, int spotLoc) {
@@ -427,7 +433,7 @@ public class Board {
         if (arr.length != 2)
             throw new NotLocationException("Incorrect length of string. Needs to be 2 long.");
         // arr[0] is the letter, convert it down from ascii
-        int letterVal = arr[0] - 96 - 1;
+        int letterVal = convertLetterToIndex(arr[0]);
         int numberVal = (arr[1] - 49) * 8;
         int combinedVal = letterVal + numberVal;
         if (combinedVal < 0 || combinedVal > 63) {
@@ -436,7 +442,7 @@ public class Board {
         return combinedVal;
     }
 
-    static int covertLetterToIndex(char c){
+    static int convertLetterToIndex(char c){
         return c - 97;
     }
 
