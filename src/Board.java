@@ -13,7 +13,6 @@ public class Board {
     // This is the last move record, a record of moves and pieces that were taken during that move
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
-
     static class LastMoveRecord {
         private final Move move;
         private final Piece takenPiece;
@@ -43,6 +42,10 @@ public class Board {
                 this.newType = newType;
             }
         }
+    }
+
+    public static void clear() {
+        spots = new Spot[64];
     }
 
     public static void outputToFile() {
@@ -224,6 +227,7 @@ public class Board {
     //Populates the board from the FEN string
     //TODO Enable error proofing for the FEN input
     static void popFromFEN(String inputString) {
+        Board.clear();
         //Split the input into its separate functions:
         // [0] = Board spaces
         // [1] = Turn to move (b - black, w - white)
@@ -436,6 +440,10 @@ public class Board {
         return combinedVal;
     }
 
+    static int covertLetterToIndex(char c){
+        return c - 97;
+    }
+
     // Goes the other way around
     //static String convertIndexToOutput(int spot) {
     //    int verticalSpot = -1;
@@ -476,6 +484,13 @@ public class Board {
                 horizontalSpot,
                 verticalSpot
         };
+    }
+
+    static boolean spotIsWhiteTile(int spot){
+        int[] xy = Board.convertIndexToDoubleIndex(spot);
+        if(xy[0] % 2 == xy[1] % 2)
+            return true;
+        return false;
     }
 
     //Standard java inherited method override
@@ -555,8 +570,7 @@ public class Board {
             if((Chess.isPVP || Board.isWhiteTurn) && !aiIsActing){ // Player turns
                 // Get their desired piece type
                 newType = InputGetter.getPromotionType(move.endSpot);
-            } else{ // If the ai is acting on behalf of the player, or its hte ai turn
-                // Assume that it is a queen
+            } else{ // If the ai is acting on behalf of the player, or its the ai turn
                 newType = Piece.Type.Queen;
             }
             return new LastMoveRecord.Promotion(move, token.pieceType, newType);
