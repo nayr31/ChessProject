@@ -219,9 +219,13 @@ public class MoveCoordinator {
 
     // King can only go once in each direction, but also can't go where there are other colored moves present
     static ArrayList<Move> generateKingMoves(int startSpot, Piece token) {
-        ArrayList<Move> kingMoves = new ArrayList<>();
-        Spot[] spots = Board.getSpots();
+        ArrayList<Move> kingMoves = new ArrayList<>(kingMoveMoves(startSpot, token));
+        kingMoves.addAll(kingCastleMoves(startSpot, token));
+        return kingMoves;
+    }
 
+    static ArrayList<Move> kingMoveMoves(int startSpot, Piece token){
+        ArrayList<Move> kingMoves = new ArrayList<>();
         // For each move direction
         // Just moves, castling is done afterwards
         for (int i = 0; i < 8; i++) {
@@ -229,7 +233,7 @@ public class MoveCoordinator {
             if (numSquaresToEdge(startSpot, i) >= 1) {
                 int targetSpot = startSpot + Director.directionCorrection(i);
 
-                Piece target = spots[targetSpot].spotPiece;
+                Piece target = Board.spots[targetSpot].spotPiece;
                 if (target != null) {
                     if (!token.isFriendly(target)) { // If enemy piece
                         kingMoves.add(new Move(startSpot, targetSpot));
@@ -240,7 +244,11 @@ public class MoveCoordinator {
                 }
             }
         }
+        return kingMoves;
+    }
 
+    static ArrayList<Move> kingCastleMoves(int startSpot, Piece token){
+        ArrayList<Move> kingMoves = new ArrayList<>();
         // Castling has rules:
         //  1 - King moves two spaces towards king/queen side
         //  2 - Rook goes on other side of king
@@ -263,7 +271,6 @@ public class MoveCoordinator {
                 }
             }
         }
-
         return kingMoves;
     }
 
