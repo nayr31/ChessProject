@@ -26,7 +26,7 @@ public class FileDecoder {
             strMoves = Arrays.copyOf(strMoves,strMoves.length-1);
 
             if (isValidGame(game)) {
-                System.out.println(game);
+                //System.out.println(game);
                 ArrayList<Move> moves = new ArrayList<>();
                 Board.popNormal();
                 Board.isWhiteTurn = true;
@@ -35,7 +35,7 @@ public class FileDecoder {
                     Move move = determineMove(str);
                     if (move != null) {
                         moves.add(move);
-                        System.out.println(str + " : " +  move);
+                        //System.out.println(str + " : " +  move);
                         //Board.makeMove(move);
                     } else {
                         willAdd = false;
