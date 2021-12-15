@@ -614,28 +614,8 @@ public class MoveCoordinator {
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
         Board.aiIsActing = true;
-        ArrayList<Move> moves = new ArrayList<>();
-        ArrayList<Move> legalMoves = new ArrayList<>();
-        Spot[] spots = Board.getSpots();
 
-        int kingSpot = getKingSpot(isWhite);
-        ArrayList<Move> friendlyPieceMoves = getGeneralPieceMoves(isWhite);
-        ArrayList<Move> friendlyNonPawnMoves = cullPawnMoves(friendlyPieceMoves);
-        ArrayList<Move> friendlyPawnAttackingMoves = generateAttackingPawnMoveSpots(isWhite);
-        ArrayList<Move> friendlyKingMoves = getKingMoves(isWhite);
-        ArrayList<Move> enemyPieceMoves = cullPawnMoves(getGeneralPieceMoves(!isWhite));
-        ArrayList<Move> enemyKingMoves = getGeneralKingMoves(kingSpot, !isWhite);
-        ArrayList<Move> enemyPawnAttackers = generateAttackingPawnMoveSpots(!isWhite);
-
-        // Generate attacking move list
-        ArrayList<Move> attackers = new ArrayList<>();
-        attackers.addAll(enemyPieceMoves);
-        attackers.addAll(enemyPawnAttackers);
-        // Generate defender move list
-        ArrayList<Move> defenders = new ArrayList<>(friendlyNonPawnMoves);
-        defenders.addAll(friendlyPawnAttackingMoves);
-
-        /**
+        /*
         // Check to see if our king is in check, this limits our moves to those that break the attackers or block line of sight
         if (spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)) {
             System.out.println("check?");
@@ -673,14 +653,15 @@ public class MoveCoordinator {
         }
 
          */
-        // King is not in check, add in all possible legal moves
-        moves.addAll(friendlyKingMoves);
-        moves.addAll(friendlyPieceMoves);
+
+        ArrayList<Move> moves = new ArrayList<>(MoveCoordinator.getGeneralPieceMoves(isWhite));
+        moves.addAll(MoveCoordinator.getKingMoves(isWhite));
+
+        ArrayList<Move> legalMoves = new ArrayList<>();
         for (Move move:moves) {
             Board.makeMove(move);
-            if(!spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)){
+            if(!kingIsInCheck(isWhite))
                legalMoves.add(move);
-            }
             Board.unmakeMove();
         }
 
