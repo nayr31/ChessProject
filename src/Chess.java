@@ -7,9 +7,10 @@ class Chess {
     static boolean isPVP = false;
 
     Chess() {
-        //game();
-        //debug();
         FileDecoder.populateGMGameMoves();
+        game();
+        //debug();
+
         System.exit(1);
     }
 

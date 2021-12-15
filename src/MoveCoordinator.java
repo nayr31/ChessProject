@@ -588,11 +588,12 @@ public class MoveCoordinator {
 
     // Another method in case we want a specific color move list
     public static ArrayList<Move> generateLegalMoves() {
-        //return generateLegalMoves(Board.isWhiteTurn);
-        return generateLegalMovesOLD(Board.isWhiteTurn);
+        return generateLegalMoves(Board.isWhiteTurn);
+        //return generateLegalMovesOLD(Board.isWhiteTurn);
 
     }
 
+    /*
     //TEMPORARY TESTING METHOD
     //DO NOT USE IN FINAL PRODUCT
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
@@ -604,12 +605,13 @@ public class MoveCoordinator {
         return moves;
 
     }
+    */
 
     //TODO Generating legal moves needs to be finished
     // Currently it assumes that you want to generate all possible moves for color, then cull the bad ones to
     //  return a complete list of legal moves.
     // We can also instead make the move, check if it is bad, and add it if it wasn't
-    public static ArrayList<Move> generateLegalMovesOLD(boolean isWhite) {
+    public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
         Board.aiIsActing = true;
         ArrayList<Move> moves = new ArrayList<>();

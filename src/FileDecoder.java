@@ -11,8 +11,6 @@ public class FileDecoder {
     static final Move[] castleMoves = generateCastleMoves();
 
     //TODO Preform major testing on this, moves like "Nc6" are failing from a NotLocationException
-    // The method "removePlusFromEndLocation" is causing the problem
-    // Either make another dedicated method for it, or figure out why it isn't working in the first place
 
     static void populateGMGameMoves() {
         try {
@@ -38,7 +36,7 @@ public class FileDecoder {
                     if (move != null) {
                         moves.add(move);
                         System.out.println(str + " : " +  move);
-                        Board.makeMove(move);
+                        //Board.makeMove(move);
                     } else {
                         willAdd = false;
                         break;
