@@ -583,6 +583,7 @@ public class MoveCoordinator {
     public static ArrayList<Move> generateLegalMoves() {
         //return generateLegalMoves(Board.isWhiteTurn);
         return generateLegalMovesOLD(Board.isWhiteTurn);
+
     }
 
     //TEMPORARY TESTING METHOD
@@ -625,6 +626,7 @@ public class MoveCoordinator {
         ArrayList<Move> defenders = new ArrayList<>(friendlyNonPawnMoves);
         defenders.addAll(friendlyPawnAttackingMoves);
 
+        /**
         // Check to see if our king is in check, this limits our moves to those that break the attackers or block line of sight
         if (spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)) {
             System.out.println("check?");
@@ -661,10 +663,10 @@ public class MoveCoordinator {
             return legalMoves;
         }
 
+         */
         // King is not in check, add in all possible legal moves
         moves.addAll(friendlyKingMoves);
         moves.addAll(friendlyPieceMoves);
-        System.out.println(moves.size());
         for (Move move:moves) {
             Board.makeMove(move);
             if(!spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)){

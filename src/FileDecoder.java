@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class FileDecoder {
@@ -24,7 +25,10 @@ public class FileDecoder {
 
         for (String game : gmGames) {
             String[] strMoves = game.split(" ");
+            strMoves = Arrays.copyOf(strMoves,strMoves.length-1);
+
             if (isValidGame(game)) {
+                System.out.println(game);
                 ArrayList<Move> moves = new ArrayList<>();
                 Board.popNormal();
                 Board.isWhiteTurn = true;
@@ -33,6 +37,7 @@ public class FileDecoder {
                     Move move = determineMove(str);
                     if (move != null) {
                         moves.add(move);
+                        System.out.println(str + " : " +  move);
                         Board.makeMove(move);
                     } else {
                         willAdd = false;
@@ -87,7 +92,7 @@ public class FileDecoder {
 
         // Pawn captures only involve the column as an identifier
         try {
-            int targetLocation = Board.convertInputToIndex(removePlusFromEndLocation(input));
+            int targetLocation = Board.convertInputToIndex(removeSuffix(input));
             int startLocation = -1;
             if (moveType == Piece.Type.Pawn) {
                 // The string will have the letter in the column as the first character
@@ -177,15 +182,28 @@ public class FileDecoder {
         return -1;
     }
 
-    private static String removePlusFromEndLocation(String line) {
+    private static String removeSuffix(String line) {
+        //System.out.println(line);
         int offset = 0;
-        if (stringHasPlus(line))
+        if (stringHasBoth(line)) {
+            offset = 3;
+        }else if(stringHasPlus(line)){
             offset = 1;
-        return line.substring(line.length() - 1 - offset - 2, line.length() - 1 - offset);
+        }else if(stringHasQEquals(line)){
+            offset = 2;
+        }
+        //System.out.println(line+ " : " + line.substring(line.length()  - offset - 2, line.length()  - offset));
+        return line.substring(line.length()  - offset - 2, line.length()  - offset);
     }
 
     private static boolean stringHasPlus(String line) {
         return line.charAt(line.length() - 1) == '+';
+    }
+    private static boolean stringHasQEquals(String line) {
+        return line.charAt(line.length() - 1) == 'Q' &&  line.charAt(line.length() - 2) == '=';
+    }
+    private static boolean stringHasBoth(String line) {
+        return line.charAt(line.length() - 1) == '+' && line.charAt(line.length() - 2) == '!' &&  line.charAt(line.length() - 3) == '=';
     }
 
     private static int getPawnStandardMoveLocation(int location) {
