@@ -50,6 +50,10 @@ public class MoveCoordinator {
         return !spotIsNotCoveredByEnemyPiece(kingSpot, isWhite);
     }
 
+    static boolean kingIsNotInCheck(boolean isWhite){
+        return !kingIsInCheck(isWhite);
+    }
+
     static int getKingSpot(boolean isWhite) {
         Spot[] spots = Board.getSpots();
         for (int startSpot = 0; startSpot < 64; startSpot++) {
@@ -115,6 +119,7 @@ public class MoveCoordinator {
 
     // Just the knight, as it is special with the L pattern
     static ArrayList<Move> generateKnightMoves(int startSpot, Piece token) {
+        //TODO knights can take friendly pieces
         ArrayList<Move> knightMoves = new ArrayList<>();
         for (int dir = 0; dir < 8; dir++) {
             int suggestedEndSpot = knightDirectionIsValid(startSpot, dir);
@@ -150,6 +155,12 @@ public class MoveCoordinator {
             } else break; // Break in both instances
         }
 
+        pawnMoves.addAll(pawnAttackingMoves(startSpot, token));
+        return pawnMoves;
+    }
+
+    static ArrayList<Move> pawnAttackingMoves(int startSpot, Piece token){
+        ArrayList<Move> moves = new ArrayList<>();
         // Target taking
         // Get the target directions of the piece depending on the color
         int[] targetDir = Director.pawnAttackDirectionCorrection(token.isWhite);
@@ -161,17 +172,17 @@ public class MoveCoordinator {
                 int targetSpot = startSpot + Director.directionCorrection(targetDir[i]); // Board wise value of the target direction
 
                 // Diagonal target in the pawns relative attack vectors
-                Piece target = spots[targetSpot].spotPiece;
+                Piece target = Board.spots[targetSpot].spotPiece;
 
                 // Add the move if it is an enemy piece
                 if (target != null) {
                     if (!token.isFriendly(target))
-                        pawnMoves.add(new Move(startSpot, targetSpot));
+                        moves.add(new Move(startSpot, targetSpot));
                 } else { // If the space is empty, we may be able to passant
                     // We would normally check to see if there are enough spaces to the right or left, but diagonal ensures both
                     // Make a new passantTargetSpot where the pawn would be that it needs to take
                     int passantTargetSpot = startSpot + Director.directionCorrection(passantDir[i]);
-                    target = spots[passantTargetSpot].spotPiece;
+                    target = Board.spots[passantTargetSpot].spotPiece;
                     if (target != null) { // There is a piece at the new targetSpot
                         // Check if it is an enemy pawn that move delta is 16 (moved 2 spaces)
                         Move targetLastMove = target.getLastMove();
@@ -181,15 +192,14 @@ public class MoveCoordinator {
                                     && targetLastMove.moveDelta() == 16) {
                                 // Add the move, but make the spot that dies the enemy pawn
                                 // So it would technically move into the pawn, then towards its final destination
-                                pawnMoves.add(new Move(startSpot, passantTargetSpot, new Move(passantTargetSpot, targetSpot)));
+                                moves.add(new Move(startSpot, passantTargetSpot, new Move(passantTargetSpot, targetSpot)));
                             }
                         }
                     }
                 }
             }
         }
-
-        return pawnMoves;
+        return moves;
     }
 
     // Generates a list of moves for pawns on all of their attacking spots
@@ -403,7 +413,6 @@ public class MoveCoordinator {
     // Checks to see if a known enemy move is covers a spot with a move
     static boolean spotIsNotCoveredByEnemyPiece(int spot, boolean isWhite) {
         return spotIsNotCoveredByEnemyPiece(spot, isWhite, null);
-        //TODO improve performance of move generation, store the previous enemy list?
     }
 
     // Returns the amount of squares that are in between a piece's spot and the edge of the board
@@ -520,9 +529,12 @@ public class MoveCoordinator {
             else { // dir == 4 || dir == 3
                 if(suggestedSpot == keyRowKey + 8)
                     return -1;
-                if(dir == 3)
+                if(dir == 3){
                     if(suggestedSpot == keyRowKey + 9)
                         return -1;
+                    if(suggestedSpot == 0)
+                        return -1;
+                }
             }
         }
 
@@ -589,79 +601,21 @@ public class MoveCoordinator {
     // Another method in case we want a specific color move list
     public static ArrayList<Move> generateLegalMoves() {
         return generateLegalMoves(Board.isWhiteTurn);
-        //return generateLegalMovesOLD(Board.isWhiteTurn);
-
     }
 
-    /*
-    //TEMPORARY TESTING METHOD
-    //DO NOT USE IN FINAL PRODUCT
-    public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
-        //return generateLegalMovesOLD(isWhite);
 
-        ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
-        ArrayList<Move> kingMoves = getKingMoves(isWhite);
-        moves.addAll(kingMoves);
-        return moves;
-
-    }
-    */
-
-    //TODO Generating legal moves needs to be finished
-    // Currently it assumes that you want to generate all possible moves for color, then cull the bad ones to
-    //  return a complete list of legal moves.
-    // We can also instead make the move, check if it is bad, and add it if it wasn't
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
         Board.aiIsActing = true;
 
-        /*
-        // Check to see if our king is in check, this limits our moves to those that break the attackers or block line of sight
-        if (spotIsNotCoveredByEnemyPiece(kingSpot, isWhite, attackers)) {
-            System.out.println("check?");
-            // King is in check, must find all possible moves that would save him
-
-            // First check for moves that the king can take
-            for (int i = 0; i < 8; i++) {
-                if (numSquaresToEdge(kingSpot, i) >= 1) {
-                    int targetSpot = kingSpot + Director.directionCorrection(i);
-                    if (spots[targetSpot].spotPiece == null && spotIsNotCoveredByEnemyPiece(targetSpot, isWhite, attackers))
-                        moves.add(new Move(kingSpot, targetSpot));
-                }
-            }
-            // Next we check for friendly moves that can kill attackers, them check again if the spot is covered
-            ArrayList<Move> potentialSacrifices = new ArrayList<>();
-            ArrayList<Move> attackersOnThisSpot = getAttackingPiecesOnSpot(kingSpot, isWhite, attackers);
-            // If there are more than one attacking piece, then we can't take just one
-            if (attackersOnThisSpot.size() == 1) {
-                // Cross reference our defending pieces list to see which kill the opposing pieces
-                for (Move enemyMove : attackersOnThisSpot) {
-                    for (Move friendlyMove : defenders) {
-                        if (friendlyMove.endSpot == enemyMove.startSpot)
-                            potentialSacrifices.add(friendlyMove);
-                    }
-                }
-                // Sometimes there will be no defenders that are able to kill the attacker
-                if (potentialSacrifices.size() != 0)
-                    legalMoves.addAll(potentialSacrifices);
-                // Don't return, add to overall list
-            }
-            // This means that we need to see if we can block the attacking pieces
-            // Checks on each square to see if there is an end spot in that list
-            Board.aiIsActing = false;
-            return legalMoves;
-        }
-
-         */
-
-        ArrayList<Move> moves = new ArrayList<>(MoveCoordinator.getGeneralPieceMoves(isWhite));
-        moves.addAll(MoveCoordinator.getKingMoves(isWhite));
+        ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
+        moves.addAll(getKingMoves(isWhite));
 
         ArrayList<Move> legalMoves = new ArrayList<>();
         for (Move move:moves) {
             Board.makeMove(move);
-            if(!kingIsInCheck(isWhite))
-               legalMoves.add(move);
+            if(!Board.playerInCheck(isWhite))
+                legalMoves.add(move);
             Board.unmakeMove();
         }
 
