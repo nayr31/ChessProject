@@ -10,8 +10,6 @@ public class FileDecoder {
     static final int readLimit = 500; // Set a read limit for the number of lines for performance reasons
     static final Move[] castleMoves = generateCastleMoves();
 
-    //TODO Preform major testing on this, moves like "Nc6" are failing from a NotLocationException
-
     static void populateGMGameMoves() {
         try {
             populateGMGames();
