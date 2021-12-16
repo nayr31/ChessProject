@@ -36,8 +36,9 @@ public class FileDecoder {
                     if (move != null) {
                         moves.add(move);
                         //System.out.println(str + " : " +  move);
-                        //Board.makeMove(move);
+                        Board.makeMove(move);
                     } else {
+
                         willAdd = false;
                         break;
                     }
@@ -92,9 +93,9 @@ public class FileDecoder {
         try {
             int targetLocation = Board.convertInputToIndex(removeSuffix(input));
             int startLocation = -1;
-            if (moveType == Piece.Type.Pawn) {
+            if (moveType == Piece.Type.Pawn) { // Pawn captures exclusively
                 // The string will have the letter in the column as the first character
-                startLocation = getPawnLocationBeforeAttacking(targetLocation,
+                return getPawnAttackingMove(targetLocation,
                         Board.convertLetterToIndex(input.charAt(0)));
             } else { // Piece is a normal piece
                 ArrayList<Integer> possiblePieceLocations =
@@ -174,10 +175,35 @@ public class FileDecoder {
         return locations;
     }
 
-    private static int getPawnLocationBeforeAttacking(int target, int col) {
-        //TODO Finish pawn location before attacking
-        int[] pawnAttackDirections = Director.pawnAttackDirectionCorrection(Board.isWhiteTurn);
-        return -1;
+    private static Move getPawnAttackingMove(int target, int col) {
+        // Get all attacking moves of all pawns
+        ArrayList<Move> attackingMoves = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            Piece token = Board.spots[i].spotPiece;
+            if(token != null){
+                if(token.pieceType == Piece.Type.Pawn){
+                    attackingMoves.addAll(MoveCoordinator.pawnAttackingMoves(i, Board.getTokenAtSpot(i)));
+                }
+            }
+        }
+        // Search for pawns with that end spot
+        ArrayList<Move> possibleMoves = new ArrayList<>();
+        for(Move move:attackingMoves){
+            if(MoveCoordinator.endSpotInMove(move) == target)
+                possibleMoves.add(move);
+        }
+        if(possibleMoves.size() == 0)
+            return null;
+        if(possibleMoves.size() == 1)
+            return possibleMoves.get(0);
+        // Otherwise there are more than one option
+        for(Move move:possibleMoves){
+            int[] index = Board.convertIndexToDoubleIndex(move.startSpot);
+            if(index[0] == col)
+                return move;
+        }
+        // Something bad happened
+        return null;
     }
 
     private static String removeSuffix(String line) {
@@ -223,24 +249,13 @@ public class FileDecoder {
         return -1;
     }
 
-    /*
-    if (token.isWhite) {
-        if (move.startSpot == 0) // WK
-            boolChanges[0] = true;
-        if (move.startSpot == 7) // WQ
-            boolChanges[1] = true;
-    } else {
-        if (move.startSpot == 56) // BK
-            boolChanges[2] = true;
-        if (move.startSpot == 63) // BQ
-            boolChanges[3] = true;
-    }*/
     private static Move[] generateCastleMoves() {
         Move[] moves = new Move[4];
         // White king side
-        moves[0] = new Move(3, 1, new Move(0, 2));
+        //TODO fix this
+        moves[0] = new Move(4, 1, new Move(0, 2));
         moves[1] = new Move(59, 57, new Move(56, 58));
-        moves[2] = new Move(3, 5, new Move(7, 4));
+        moves[2] = new Move(4, 5, new Move(7, 5));
         moves[3] = new Move(59, 61, new Move(63, 60));
         return moves;
     }
@@ -262,15 +277,8 @@ public class FileDecoder {
             case 'b' -> Piece.Type.Bishop;
             case 'n' -> Piece.Type.Knight;
             case 'r' -> Piece.Type.Rook;
-            default -> isPawn(c);
+            default -> Piece.Type.Pawn;
         };
-    }
-
-    static Piece.Type isPawn(char c) {
-        if ((int) c >= 97 && (int) c <= 104)
-            return Piece.Type.None;
-        else
-            return Piece.Type.Pawn;
     }
 
     private static void populateGMGames() throws FileNotFoundException {
