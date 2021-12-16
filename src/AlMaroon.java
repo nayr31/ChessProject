@@ -22,11 +22,18 @@ public class AlMaroon {
 
     Move think() {
         Board.aiIsActing = true;
+        // get gmgame move
+        // if the move is not null
+        //      return the move
         SearchDTO bestResult = searchAlphaBeta(minimaxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         Board.aiIsActing = false;
         return bestResult.move;
     }
 
+    //get gm game move
+    // if the current history of game moves (lastmove record) matches a record of a previous game
+    // return that next move
+    // otherwise return null
 
     SearchDTO searchAlphaBeta(int depth, int alpha, int beta) {
         if (depth == 0)
@@ -51,7 +58,7 @@ public class AlMaroon {
             Board.unmakeMove();
             Board.changeTurns(false);
 
-            if(bestMove == null){ // TODO Look into moving this, AI is suicidal
+            if(bestMove == null){
                 bestMove = move;
             }
 
