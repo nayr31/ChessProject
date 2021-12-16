@@ -114,8 +114,8 @@ class Chess {
         TerminalControl.sendStatusMessage("Al Maroon is thinking...");
         Move move  = al.think();
         if(move != null)
-            TerminalControl.setBoardMessage(Board.getTokenAtSpot(moveIsInList.startSpot).toString() +
-                    " to " + inputSplit[1]);
+            TerminalControl.setBoardMessage(Board.getTokenAtSpot(move.startSpot).toString() +
+                    " to " + Board.convertIndexToOutput(move.endSpot));
         return al.think();
     }
 
