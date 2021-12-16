@@ -81,7 +81,7 @@ public class TerminalControl extends JFrame {
         statusArea.setText(text);
     }
 
-    void refreshBoard(){
+    static void refreshBoard(){
         //if(ImageHandler.hasLoaded)
         //    boardWindow.draw();
         //else{

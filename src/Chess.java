@@ -7,11 +7,10 @@ class Chess {
     static boolean isPVP = false;
 
     Chess() {
-        FileDecoder.populateGMGameMoves();
+        //FileDecoder.populateGMGameMoves();
         game();
         //debug();
-
-        System.exit(1);
+        //System.exit(1);
     }
 
     private void game() {
@@ -51,7 +50,7 @@ class Chess {
             // If it is null, that means that an end-game state was reached
             if (superMove != null) {
                 Board.makeMove(superMove);
-                terminalControl.refreshBoard();
+                TerminalControl.refreshBoard();
                 Board.lastPlayerDidNotAct = false;
             } else {
                 Board.lastPlayerDidNotAct = true;
@@ -107,19 +106,23 @@ class Chess {
     }
 
     private Move takePlayerTurn() {
-        terminalControl.refreshBoard();
+        TerminalControl.refreshBoard();
         return InputGetter.playerTurnInput();
     }
 
     private Move takeAITurn() {
         TerminalControl.sendStatusMessage("Al Maroon is thinking...");
+        Move move  = al.think();
+        if(move != null)
+            TerminalControl.setBoardMessage(Board.getTokenAtSpot(moveIsInList.startSpot).toString() +
+                    " to " + inputSplit[1]);
         return al.think();
     }
 
     private void debug() {
         String input = "";
         while (true) {
-            terminalControl.refreshBoard();
+            TerminalControl.refreshBoard();
             input = InputGetter.askForString("Please input your debug command.\n" +
                     "\"help\" for options.");
             String[] split = input.split(" ");
