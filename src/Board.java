@@ -638,14 +638,14 @@ public class Board {
         Piece token = spots[move.startSpot].spotPiece;
         if (token.pieceType == Piece.Type.Rook) {
             if (token.isWhite) {
-                if (move.startSpot == 0) // WK
+                if (move.startSpot == 7) // WK
                     boolChanges[0] = true;
-                if (move.startSpot == 7) // WQ
+                if (move.startSpot == 0) // WQ
                     boolChanges[1] = true;
             } else {
-                if (move.startSpot == 56) // BK
+                if (move.startSpot == 63) // BK
                     boolChanges[2] = true;
-                if (move.startSpot == 63) // BQ
+                if (move.startSpot == 56) // BQ
                     boolChanges[3] = true;
             }
         }

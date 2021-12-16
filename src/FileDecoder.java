@@ -252,11 +252,10 @@ public class FileDecoder {
     private static Move[] generateCastleMoves() {
         Move[] moves = new Move[4];
         // White king side
-        //TODO fix this
-        moves[0] = new Move(4, 1, new Move(0, 2));
-        moves[1] = new Move(59, 57, new Move(56, 58));
-        moves[2] = new Move(4, 5, new Move(7, 5));
-        moves[3] = new Move(59, 61, new Move(63, 60));
+        moves[0] = new Move(4, 2, new Move(0, 3));
+        moves[1] = new Move(60, 58, new Move(56, 59));
+        moves[2] = new Move(4, 6, new Move(7, 5));
+        moves[3] = new Move(60, 62, new Move(63, 61));
         return moves;
     }
 
