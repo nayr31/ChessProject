@@ -116,7 +116,7 @@ class Chess {
         if(move != null)
             TerminalControl.setBoardMessage(Board.getTokenAtSpot(move.startSpot).toString() +
                     " to " + Board.convertIndexToOutput(move.endSpot));
-        return al.think();
+        return move;
     }
 
     private void debug() {

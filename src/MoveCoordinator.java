@@ -3,6 +3,7 @@ import java.util.ArrayList;
 // Contains all methods for generating Moves for pieces
 public class MoveCoordinator {
     static int[] FENKey = {56, 48, 40, 32, 24, 16, 8, 0};
+    static boolean isSimulating = false;
 
     // Generate a list of all moves that each piece can preform, following certain conditions:
     // 1 - Is the correct color of whomever turn it is
@@ -613,7 +614,7 @@ public class MoveCoordinator {
 
     public static ArrayList<Move> generateLegalMoves(boolean isWhite) {
         TerminalControl.sendStatusMessage("Generating legal moves...");
-        Board.aiIsActing = true;
+        isSimulating = true;
 
         ArrayList<Move> moves = new ArrayList<>(getGeneralPieceMoves(isWhite));
         moves.addAll(getKingMoves(isWhite));
@@ -627,7 +628,7 @@ public class MoveCoordinator {
         }
 
         TerminalControl.sendStatusMessage("Finished generating legal moves.");
-        Board.aiIsActing = false;
+        isSimulating = false;
         return legalMoves;
     }
 }

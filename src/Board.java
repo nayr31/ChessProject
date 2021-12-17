@@ -569,7 +569,7 @@ public class Board {
     static LastMoveRecord.Promotion promotionCheck(Move move, Piece token){
         if(doesPromote(move, token)){
             Piece.Type newType;
-            if((Chess.isPVP || Board.isWhiteTurn) && !aiIsActing){ // Player turns
+            if((Chess.isPVP || Board.isWhiteTurn) && !aiIsActing  && !MoveCoordinator.isSimulating){ // Player turns
                 // Get their desired piece type
                 newType = InputGetter.getPromotionType(move.endSpot);
             } else{ // If the ai is acting on behalf of the player, or its the ai turn
