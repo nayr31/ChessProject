@@ -122,9 +122,17 @@ public class MoveCoordinator {
         ArrayList<Move> knightMoves = new ArrayList<>();
         for (int dir = 0; dir < 8; dir++) {
             int suggestedEndSpot = knightDirectionIsValid(startSpot, dir);
-            if (suggestedEndSpot != -1 && Board.getTokenAtSpot(suggestedEndSpot).isWhite != token.isWhite){
-                knightMoves.add(new Move(startSpot, suggestedEndSpot));
+            if(suggestedEndSpot != -1){
+                Piece targetToken = Board.getTokenAtSpot(suggestedEndSpot);
+                if(targetToken != null){
+                    if(targetToken.isWhite != token.isWhite){
+                        knightMoves.add(new Move(startSpot, suggestedEndSpot));
+                    }
+                } else{
+                    knightMoves.add(new Move(startSpot, suggestedEndSpot));
+                }
             }
+
         }
         return knightMoves;
     }

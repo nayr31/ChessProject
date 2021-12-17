@@ -22,7 +22,7 @@ public class TerminalControl extends JFrame {
         initField();
         //boardWindow.setAfter((int) (this.getWidth()*1.80));
         helpWindow.setBefore((int) (this.getWidth()*1.60));
-        TerminalControl.sendCommandText("Loading images from internet, please make sure you have a connection...");
+        //TerminalControl.sendCommandText("Loading images from internet, please make sure you have a connection...");
         //try {
         //    ImageHandler.loadImages();
         //} catch (Exception e) {
