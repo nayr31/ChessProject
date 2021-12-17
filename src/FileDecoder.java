@@ -53,7 +53,6 @@ public class FileDecoder {
         Board.aiIsActing = false;
         Board.clear();
         Board.lastMoveRecords = new ArrayList<>();
-        //System.out.println("Loaded gm game moves.");
     }
 
     // We only want games that black wins and that only queen promotions are present if any

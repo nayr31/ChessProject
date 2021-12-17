@@ -198,7 +198,7 @@ public class Scorer {
 
         int evalVal = whiteCount - blackCount;
         int perspective = Board.isWhiteTurn ? 1 : -1;
-
+        //System.out.println(evalVal * perspective);
         return evalVal * perspective;
     }
 

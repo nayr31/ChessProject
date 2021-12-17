@@ -27,14 +27,10 @@ public class AlMaroon {
             ArrayList<Board.LastMoveRecord> previousMoves = Board.lastMoveRecords;
             Move gmMove = FileDecoder.getGMMove(previousMoves);
             if(gmMove!= null){
-                System.out.println("GM move");
                 Board.aiIsActing = false;
                 return gmMove;
             }
         }
-        System.out.println("AI Move");
-        System.out.println("AI in checK: "  + Board.playerInCheck(false));
-        //System.out.println(MoveCoordinator.generateLegalMoves());
         SearchDTO bestResult = searchAlphaBeta(minimaxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         Board.aiIsActing = false;
         return bestResult.move;
@@ -46,7 +42,6 @@ public class AlMaroon {
             return new SearchDTO(null, Scorer.scoreBoard());
 
         ArrayList<Move> moves = orderedMoves(MoveCoordinator.generateLegalMoves());
-        //System.out.println(moves);
         if (moves.isEmpty()) { // No possible moves for this player, either checkmate or stalemate
             if(Board.playerInCheck()) // Checkmate
                 return new SearchDTO(null, Integer.MIN_VALUE);
@@ -117,35 +112,5 @@ public class AlMaroon {
         return legalMoves;
     }
 
-    //SearchDTO searchMinimax(int depth){
-    //    if(depth == 0)
-    //        return new SearchDTO(null, Scorer.scoreBoard());
-//
-    //    ArrayList<Move> moves = MoveCoordinator.generateLegalMoves();
-    //    if(moves.isEmpty()){ // No possible moves for this player
-    //        if(Board.playerInCheck()) // Is in check, which you never want
-    //            return new SearchDTO(null, -9999999);
-    //        return new SearchDTO(null, 0); // Or it is a stalemate
-    //    }
-//
-    //    int bestEval = -9999999;
-    //    Move bestMove = null;
-//
-    //    for(Move move:moves){
-    //        // Make the move then change the turn
-    //        Board.makeMove(move);
-    //        Board.changeTurns();
-    //        // Repeat on the next turn
-    //        SearchDTO eval = searchMinimax(depth-1).minus();
-    //        // After it is done change the turn back and determine the best values
-    //        Board.changeTurns();
-    //        Board.unmakeMove();
-    //        if(eval.eval < bestEval){ // Check if it is better
-    //            bestEval = eval.eval;
-    //            bestMove = eval.move;
-    //        }
-    //    }
-//
-    //    return new SearchDTO(bestMove, bestEval);
-    //}
+
 }

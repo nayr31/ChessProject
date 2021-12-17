@@ -402,24 +402,6 @@ public class MoveCoordinator {
                 //attackers.add(new Attacker(move, spots[move.startSpot].spotPiece));
             }
         }
-        /**
-        System.out.println("enemy attackers: " + attackers);
-
-        // This resulting list will be all attacking moves on that spot
-        // If there are any that aren't pawns, then the check fails
-        for (Attacker attacker : attackers) {
-            if (attacker.piece.pieceType != Piece.Type.Pawn)
-                return false; // Otherwise, the list has another piece that ends on this square
-        }
-
-        // Pawns have moves that aren't attacks, so we need to check those separately
-        // If the spot is located in that list, then it is covered
-        ArrayList<Move> pawnAttackingSpots = generateAttackingPawnMoveSpots(isWhite);
-        for (Move m : pawnAttackingSpots) {
-            if (m.endSpot == spot)
-                return false;
-        }
-        **/
         return true;
 
     }
@@ -438,7 +420,6 @@ public class MoveCoordinator {
         int directionalOffset = Director.directionCorrection(dir);//No need to calculate this multiple times
         int numSpaces = 0;
         int rowKey = generateLocalRowKey(startSpot); // Which row in the board it is at
-        //System.out.println("rowKey of " + directionCorrectionString(dir) + ":" + rowKey);
 
         while (true) {
             int suggestedSpace = startSpot + directionalOffset * (numSpaces + 1); // The square it is trying to move to
@@ -631,14 +612,8 @@ public class MoveCoordinator {
             if(!Board.playerInCheck(isWhite)) {
                 legalMoves.add(move);
             }else{
-               // System.out.println("Illegal move: " + move);
             }
             Board.unmakeMove();
-        }
-        if(moves.size()==legalMoves.size()){
-           // System.out.println("All moves legal");
-        }else{
-            //System.out.println("Possible moves: " + moves.size() + " Legal Moves: " + legalMoves.size());
         }
 
         TerminalControl.sendStatusMessage("Finished generating legal moves.");
