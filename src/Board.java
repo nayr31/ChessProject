@@ -197,7 +197,7 @@ public class Board {
     }
 
     public static boolean playerInCheck(boolean isWhite) {
-        return !MoveCoordinator.kingIsInCheck(isWhite);
+        return MoveCoordinator.kingIsInCheck(isWhite);
     }
 
     public static boolean playerInCheck() {

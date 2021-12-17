@@ -394,11 +394,16 @@ public class MoveCoordinator {
         if (enemyMoveList == null)
             enemyMoveList = getGeneralPieceMoves(!isWhite);
 
+
         // Iterate through the moves list and keep track at all pieces attacking that spot
         for (Move move : enemyMoveList) {
-            if (move.endSpot == spot)
-                attackers.add(new Attacker(move, spots[move.startSpot].spotPiece));
+            if (move.endSpot == spot) {
+                return false;
+                //attackers.add(new Attacker(move, spots[move.startSpot].spotPiece));
+            }
         }
+        /**
+        System.out.println("enemy attackers: " + attackers);
 
         // This resulting list will be all attacking moves on that spot
         // If there are any that aren't pawns, then the check fails
@@ -414,8 +419,9 @@ public class MoveCoordinator {
             if (m.endSpot == spot)
                 return false;
         }
-
+        **/
         return true;
+
     }
 
     // Checks to see if a known enemy move is covers a spot with a move
@@ -622,9 +628,17 @@ public class MoveCoordinator {
         ArrayList<Move> legalMoves = new ArrayList<>();
         for (Move move:moves) {
             Board.makeMove(move);
-            if(!Board.playerInCheck(isWhite))
+            if(!Board.playerInCheck(isWhite)) {
                 legalMoves.add(move);
+            }else{
+               // System.out.println("Illegal move: " + move);
+            }
             Board.unmakeMove();
+        }
+        if(moves.size()==legalMoves.size()){
+           // System.out.println("All moves legal");
+        }else{
+            //System.out.println("Possible moves: " + moves.size() + " Legal Moves: " + legalMoves.size());
         }
 
         TerminalControl.sendStatusMessage("Finished generating legal moves.");

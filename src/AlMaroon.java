@@ -33,21 +33,20 @@ public class AlMaroon {
             }
         }
         System.out.println("AI Move");
+        System.out.println("AI in checK: "  + Board.playerInCheck(false));
+        //System.out.println(MoveCoordinator.generateLegalMoves());
         SearchDTO bestResult = searchAlphaBeta(minimaxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         Board.aiIsActing = false;
         return bestResult.move;
     }
 
-    //get gm game move
-    // if the current history of game moves (lastmove record) matches a record of a previous game
-    // return that next move
-    // otherwise return null
 
     SearchDTO searchAlphaBeta(int depth, int alpha, int beta) {
         if (depth == 0)
             return new SearchDTO(null, Scorer.scoreBoard());
 
         ArrayList<Move> moves = orderedMoves(MoveCoordinator.generateLegalMoves());
+        //System.out.println(moves);
         if (moves.isEmpty()) { // No possible moves for this player, either checkmate or stalemate
             if(Board.playerInCheck()) // Checkmate
                 return new SearchDTO(null, Integer.MIN_VALUE);

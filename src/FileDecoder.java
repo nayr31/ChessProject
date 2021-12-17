@@ -53,7 +53,7 @@ public class FileDecoder {
         Board.aiIsActing = false;
         Board.clear();
         Board.lastMoveRecords = new ArrayList<>();
-        System.out.println("Loaded gm game moves.");
+        //System.out.println("Loaded gm game moves.");
     }
 
     // We only want games that black wins and that only queen promotions are present if any
@@ -298,7 +298,7 @@ public class FileDecoder {
      */
     public static Move getGMMove(ArrayList<Board.LastMoveRecord> pastMoves){
         Move nextMove = null;
-        System.out.println("GM Games " + gmGameMoves.size());
+        //System.out.println("GM Games " + gmGameMoves.size());
         int counter = 0;
         //loop for all games
         for (ArrayList<Move> game:  gmGameMoves) {
@@ -326,7 +326,7 @@ public class FileDecoder {
 
 
         }
-        System.out.println("games analyzed: "  + counter);
+        //System.out.println("games analyzed: "  + counter);
         return nextMove;
     }
 }
