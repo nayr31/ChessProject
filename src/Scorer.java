@@ -161,6 +161,14 @@ public class Scorer {
         return tempArray;
     }
 
+    static int[] chooseKingArray(boolean isWhite){
+        boolean isLateGame = isLateGame(Board.getSpots());
+        if(isLateGame)
+            return isWhite ? kingLateMultiplier : kingEarlyMultiplierBlack;
+        else
+            return isWhite ? kingEarlyMultiplier : kingEarlyMultiplierBlack;
+    }
+
     // A check to determine if the game state is in lategame or not
     static boolean isLateGame(Spot[] spots){
         boolean whiteHasQueen = false;
@@ -222,7 +230,7 @@ public class Scorer {
             case Pawn -> isWhite ? pawnMultiplier : pawnMultiplierBlack;
             case Bishop -> isWhite ? bishopMultiplier : bishopMultiplierBlack;
             case Queen -> isWhite ? queenMultiplier : queenMultiplierBlack;
-            case King -> isWhite ? kingLateMultiplier : kingLateMultiplierBlack;
+            case King -> chooseKingArray(isWhite);
             case None -> null;
         };
         if(referenceArray == null){
