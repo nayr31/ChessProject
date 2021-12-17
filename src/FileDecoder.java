@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class FileDecoder {
     static ArrayList<String> gmGames = new ArrayList<>();
     static ArrayList<ArrayList<Move>> gmGameMoves = new ArrayList<>();
-    static final int readLimit = 500; // Set a read limit for the number of lines for performance reasons
+    static final int readLimit = 99999; // Set a read limit for the number of lines for performance reasons
     static final Move[] castleMoves = generateCastleMoves();
 
     static void populateGMGameMoves() {
@@ -32,6 +32,9 @@ public class FileDecoder {
                 for (String str : strMoves) {  // For each string move made in the game
                     Move move = determineMove(str);
                     if (move != null) {
+                        if(str.equals("O-O") || str.equals("O-O-O")){
+                            break;
+                        }
                         moves.add(move);
                         //System.out.println(str + " : " +  move);
                         Board.makeMove(move);
@@ -49,6 +52,7 @@ public class FileDecoder {
 
         Board.aiIsActing = false;
         Board.clear();
+        Board.lastMoveRecords = new ArrayList<>();
         System.out.println("Loaded gm game moves.");
     }
 
@@ -56,7 +60,7 @@ public class FileDecoder {
     static boolean isValidGame(String game) {
         String[] strMoves = game.split(" ");
         return strMoves[strMoves.length - 1].equals("0-1")
-                && !game.contains("=R") && !game.contains("=N") && !game.contains("=B");
+                && !game.contains("=R") && !game.contains("=N") && !game.contains("=B") ;
     }
 
     // https://www.ichess.net/blog/chess-notation/
@@ -285,5 +289,44 @@ public class FileDecoder {
         for (int i = 0; i < readLimit && scanner.hasNextLine(); i++) {
             gmGames.add(scanner.nextLine());
         }
+    }
+
+    /**
+     * This method outputs a move based on previous moves
+     * @param pastMoves - ArrayList of the previously made moves
+     * @return nextMove: A move a GM has previously made in this situation
+     */
+    public static Move getGMMove(ArrayList<Board.LastMoveRecord> pastMoves){
+        Move nextMove = null;
+        System.out.println("GM Games " + gmGameMoves.size());
+        int counter = 0;
+        //loop for all games
+        for (ArrayList<Move> game:  gmGameMoves) {
+            counter++;
+            boolean matching = true;
+            //loop for all previous moves
+            for (int i = 0; i < pastMoves.size(); i++) {
+                matching = true;
+                if(pastMoves.get(i).isRoot){
+                    Move oldMove = pastMoves.get(i).move;
+                    Move gmMove = game.get(i);
+                    //System.out.println(oldMove + " : " + gmMove);
+                    //check if they are not equal
+                    if(oldMove.startSpot != gmMove.startSpot || oldMove.endSpot != gmMove.endSpot ){
+                        matching = false;
+                        break;
+                    }
+                }
+            }
+            //if the sets of moves were matching
+            if(matching){
+                nextMove = game.get(pastMoves.size());
+                break;
+            }
+
+
+        }
+        System.out.println("games analyzed: "  + counter);
+        return nextMove;
     }
 }

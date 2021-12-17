@@ -14,7 +14,7 @@ public class Board {
     // This is used recursively to make consecutive moves and to undo them as well
     static ArrayList<LastMoveRecord> lastMoveRecords = new ArrayList<>();
     static class LastMoveRecord {
-        private final Move move;
+        final Move move;
         private final Piece takenPiece;
         boolean isRoot;
         boolean[] boolChanges;

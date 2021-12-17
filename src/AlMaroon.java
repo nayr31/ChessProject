@@ -5,6 +5,7 @@ public class AlMaroon {
     // This is the AI, named Al Maroon
     // He always uses the black pieces, and is doesn't know every rule of chess
     static int minimaxDepth = 1;
+    static final int startMove = 5;
 
     class SearchDTO {
         Move move;
@@ -22,9 +23,16 @@ public class AlMaroon {
 
     Move think() {
         Board.aiIsActing = true;
-        // get gmgame move
-        // if the move is not null
-        //      return the move
+        if(Board.fullMoves < startMove){
+            ArrayList<Board.LastMoveRecord> previousMoves = Board.lastMoveRecords;
+            Move gmMove = FileDecoder.getGMMove(previousMoves);
+            if(gmMove!= null){
+                System.out.println("GM move");
+                Board.aiIsActing = false;
+                return gmMove;
+            }
+        }
+        System.out.println("AI Move");
         SearchDTO bestResult = searchAlphaBeta(minimaxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         Board.aiIsActing = false;
         return bestResult.move;
