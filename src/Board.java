@@ -225,6 +225,7 @@ public class Board {
     static boolean popFromFEN(String inputString) {
         try{
             Board.clear();
+            Scorer.isLateGame = false;
             //Split the input into its separate functions:
             // [0] = Board spaces
             // [1] = Turn to move (b - black, w - white)

@@ -92,6 +92,7 @@ public class Scorer {
     static int[] knightMultiplierBlack;
     static int[] kingEarlyMultiplierBlack;
     static int[] kingLateMultiplierBlack;
+    static boolean isLateGame = false;
 
     // Required to run exactly once before using the score boards
     static void initiate(){
@@ -162,7 +163,10 @@ public class Scorer {
     }
 
     static int[] chooseKingArray(boolean isWhite){
-        boolean isLateGame = isLateGame(Board.getSpots());
+        // Once we hit late game, we can stop testing for late game
+        if(!isLateGame)
+            isLateGame = isLateGame(Board.getSpots());
+
         if(isLateGame)
             return isWhite ? kingLateMultiplier : kingEarlyMultiplierBlack;
         else
