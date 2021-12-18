@@ -15,6 +15,7 @@ public class FileDecoder {
             populateGMGames();
         } catch (FileNotFoundException e) {
             System.out.println("File not found for making gm moves.");
+            System.exit(1);
         }
 
         Board.aiIsActing = true;
